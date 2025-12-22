@@ -33,12 +33,28 @@ function About() {
         <div className="about-description">
           <br />
           <p>
-            I would like to acknowledge Andy Nguyen and Anne Pham for working with me to develop this website and supporting every step of
-            the journey, from shaping the initial idea to polishing the final experience.
+            I would like to thank{' '}
+            <a
+              href="https://www.linkedin.com/in/minhan6559/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Andy Nguyen
+            </a>{' '}
+            and{' '}
+            <a
+              href="https://www.linkedin.com/in/annetranhpham/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Anne Pham
+            </a>{' '}
+            for their contributions to the development of the core functionality of this website application. Their support throughout the project, from shaping the
+            initial concept to refining the final experience, laid a strong foundation upon which this work was built.
           </p>
           <p>
-            Their hard work, creativity, and constant encouragement have been invaluable, and I&apos;m deeply grateful for their
-            collaboration and belief in this project.
+            The solid baseline of the website they created made it possible for me to further develop the website by exploring and integrating intentional security
+            vulnerabilities as part of a hands-on learning experience.
           </p>
           <br />
         </div>
