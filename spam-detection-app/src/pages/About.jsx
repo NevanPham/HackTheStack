@@ -5,53 +5,6 @@ import minhAnImg from '../assets/images/minh-an.jpg';
 function About() {
   return (
     <div className="about-content">
-      <h1 className="page-title">Meet Our Team</h1>
-
-      <section className="team-section">
-        <div className="team-grid">
-          <div className="team-member">
-            <div className="team-avatar">
-              <img src={trangAnhImg} alt="Hoang Trang Anh Pham" />
-            </div>
-            <h3 className="team-name">Hoang Trang Anh Pham</h3>
-            <p className="team-role">Data Analyst Lead</p>
-          </div>
-
-          <div className="team-member">
-            <div className="team-avatar">
-              <img src={khoiNguyenImg} alt="Khoi Nguyen Pham" />
-            </div>
-            <h3 className="team-name">Khoi Nguyen Pham</h3>
-            <p className="team-role">Technical Lead</p>
-          </div>
-
-          <div className="team-member">
-            <div className="team-avatar">
-              <img src={minhAnImg} alt="Minh An Nguyen" />
-            </div>
-            <h3 className="team-name">Minh An Nguyen</h3>
-            <p className="team-role">Manager Lead</p>
-          </div>
-        </div>
-      </section>
-
-      <section className="about-description">
-        <br />
-        <p>
-          We're a team of cybersecurity and machine learning specialists dedicated to making email security simple and effective. Our goal
-          is to protect users from spam and malicious emails while helping them understand the threats they encounter.
-        </p>
-        <p>
-          We believe security tools should be both powerful and easy to use. That's why we've built a spam detector that not only identifies
-          threats but also explains why something is dangerous, empowering users with knowledge to stay safe online.
-        </p>
-        <br />
-        <p className="cta-text">
-          <strong>Ready to test our technology? Upload an email or paste text to get started.</strong>
-        </p>
-        <br />
-      </section>
-
       <section className="about-section">
         <h2>How It Works</h2>
         <p>
@@ -72,6 +25,22 @@ function About() {
             <h3>BiLSTM</h3>
             <p>Deep learning LSTM model with bidirectional architecture reaching 97.1% accuracy</p>
           </div>
+        </div>
+      </section>
+
+      <section className="team-section">
+        <h1 className="page-title">Acknowledgement</h1>
+        <div className="about-description">
+          <br />
+          <p>
+            I would like to acknowledge Andy Nguyen and Anne Pham for working with me to develop this website and supporting every step of
+            the journey, from shaping the initial idea to polishing the final experience.
+          </p>
+          <p>
+            Their hard work, creativity, and constant encouragement have been invaluable, and I&apos;m deeply grateful for their
+            collaboration and belief in this project.
+          </p>
+          <br />
         </div>
       </section>
     </div>

@@ -35,13 +35,19 @@
 
 .about-section h2 {
   color: #8b0000;
-  font-size: 2.2rem;
+  font-size: 3.5rem;
   margin-bottom: 1rem;
   padding-bottom: 0.5rem;
   font-family: "Milker", "Impact", "Arial Black", sans-serif;
   text-align: center;
   letter-spacing: 5px;
   border-bottom: 2px solid #8b0000;
+}
+
+/* Swap heading sizes between How It Works and Acknowledgement */
+.team-section .page-title {
+  font-size: 2.2rem;
+  margin-bottom: 0.5rem;
 }
 
 .about-section p {
@@ -53,7 +59,7 @@
 
 /* Team Section */
 .team-section {
-  margin-top: 3rem;
+  margin-top: 2rem;
 }
 
 .team-member {
