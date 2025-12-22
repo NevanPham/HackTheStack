@@ -26,6 +26,11 @@ function About() {
             <p>Deep learning LSTM model with bidirectional architecture reaching 97.1% accuracy</p>
           </div>
         </div>
+        <p className="about-twist">
+          That said, not everything on this website is as polished as it appears. Some things behave a little… strangely. A few corners are rougher than expected, and
+          certain choices may raise an eyebrow if you look closely enough. This is by design. For those willing to poke around, ask questions, and push boundaries, there
+          is more to discover than just spam detection.
+        </p>
       </section>
 
       <section className="team-section">
