@@ -1,0 +1,45 @@
+/* Reset default margins and padding */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Import custom font */
+@font-face {
+  font-family: 'Asset';
+  src: url('../assets/fonts/Asset-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Milker';
+  src: url('../assets/fonts/Milker.otf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+html {
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100vw;
+}
+
+body {
+  background-color: #ffffff;
+  color: #111a19;
+  font-family: "Georgia", serif;
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100vw;
+}
+
+/* Apply flex to root instead of body */
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* Ensures full height */
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+}

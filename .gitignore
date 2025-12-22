@@ -1,0 +1,62 @@
+# Preprocessed data folders
+#preprocessed/kmeans/
+# models/kmeans/
+
+# Python cache files
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+*.pyc
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Model files (large binary files)
+#*.pkl
+*.pth
+*.h5
+*.joblib
+
+# Data files
+#*.csv
+#*.json
+*.parquet
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+
+# Environment variables
+.env
+.env.local
+
+# Coverage reports
+htmlcov/
+.coverage
+coverage.xml
+
+# pytest cache
+.pytest_cache/
+
+# mypy cache
+.mypy_cache/

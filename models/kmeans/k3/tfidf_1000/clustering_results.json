@@ -1,0 +1,96 @@
+{
+  "model_summary": {
+    "algorithm": "K-Means Clustering",
+    "n_clusters": 3,
+    "total_features": 1057,
+    "training_samples": 12003,
+    "test_samples": 3212
+  },
+  "clustering_performance": {
+    "silhouette_score": {
+      "train": -0.00796529186033232,
+      "test": -0.014497302149010304
+    },
+    "adjusted_rand_index": {
+      "train": 0.17996506919109412,
+      "test": 0.2727227402158475
+    },
+    "normalized_mutual_info": {
+      "train": 0.2587013552377323,
+      "test": 0.31730131725530175
+    }
+  },
+  "classification_performance": {
+    "accuracy": 0.8384184308841843,
+    "precision": 0.9982456140350877,
+    "recall": 0.5234590616375345,
+    "f1_score": 0.6867833433916717,
+    "roc_auc": 0.7896922993668489,
+    "average_precision": 0.7025772525848346,
+    "confusion_matrix": [
+      [
+        2124,
+        1
+      ],
+      [
+        518,
+        569
+      ]
+    ]
+  },
+  "cluster_analysis": {
+    "cluster_composition": [
+      {
+        "cluster_id": 0,
+        "size": 2161,
+        "spam_rate": 0.21888014807959277,
+        "dominant_source": "sms",
+        "source_distribution": {
+          "email": 375,
+          "sms": 835,
+          "mix_email_sms": 659,
+          "youtube": 292
+        }
+      },
+      {
+        "cluster_id": 1,
+        "size": 570,
+        "spam_rate": 0.9982456140350877,
+        "dominant_source": "mix_email_sms",
+        "source_distribution": {
+          "mix_email_sms": 566,
+          "email": 4
+        }
+      },
+      {
+        "cluster_id": 2,
+        "size": 481,
+        "spam_rate": 0.09355509355509356,
+        "dominant_source": "email",
+        "source_distribution": {
+          "email": 480,
+          "mix_email_sms": 1
+        }
+      }
+    ]
+  },
+  "cluster_to_class_mapping": {
+    "0": 0,
+    "1": 1,
+    "2": 0
+  },
+  "training_info": {
+    "timestamp": "2025-10-06T21:17:24.713070",
+    "feature_engineering": [
+      "Email artifact removal (subject lines, headers)",
+      "Enhanced spam keyword detection",
+      "Capitalization and formatting analysis",
+      "SOURCE ARTIFACT FILTERING - Removed Enron/organizational tokens",
+      "Optimized TF-IDF (min_df=5, max_df=0.6) for content focus",
+      "Custom analyzer filtering source-specific vocabulary",
+      "Diagnostic TF-IDF matrices preserved"
+    ],
+    "scaling": "StandardScaler",
+    "random_state": 42
+  }
+}

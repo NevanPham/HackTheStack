@@ -1,0 +1,824 @@
+/* ============================================
+   COMPREHENSIVE RESPONSIVE DESIGN SYSTEM
+   ============================================
+   
+   Breakpoints:
+   - Desktop/Large: 1200px+
+   - Laptop/Tablet Landscape: 768px - 1199px
+   - Tablet Portrait/Mobile Landscape: 481px - 767px
+   - Mobile Portrait: 320px - 480px
+   ============================================ */
+
+/* ===== Desktop/Large Screens (1200px+) ===== */
+@media (min-width: 1200px) {
+  .app-container,
+  .spam-detector-container,
+  .about-container {
+    max-width: 1400px;
+    padding: 2rem 4rem;
+  }
+
+  .hero-section {
+    padding: 4rem 6rem;
+    gap: 8rem;
+  }
+
+  .hero-title {
+    font-size: 5rem;
+  }
+
+  .hero-subtitle {
+    font-size: 2rem;
+  }
+
+  .detector-top-layout {
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 3rem;
+  }
+
+  .results-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+  }
+
+  .charts-count-2 {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .charts-count-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* ===== Laptop/Tablet Landscape (768px - 1199px) ===== */
+@media (min-width: 768px) and (max-width: 1199px) {
+  .app-container,
+  .spam-detector-container,
+  .about-container {
+    padding: 2rem 3rem;
+  }
+
+  .hero-section {
+    padding: 3rem 4rem;
+    gap: 4rem;
+  }
+
+  .hero-title {
+    font-size: clamp(2.5rem, 5vw, 3.8rem);
+  }
+
+  .hero-subtitle {
+    font-size: clamp(1.3rem, 2.5vw, 1.8rem);
+  }
+
+  /* Keep side-by-side layout for iPad sizes with wider container */
+  .detector-top-layout {
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .input-section {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .model-selection-section {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .results-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .charts-count-2 {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .charts-count-3 {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .charts-count-3 .model-chart-wrapper:nth-child(3) {
+    grid-column: 1 / -1;
+    max-width: 70%;
+    margin: 0 auto;
+  }
+
+  .about-container {
+    padding: 2rem 3rem;
+  }
+
+  .spam-detector-container {
+    width: 95%;
+    max-width: 95%;
+    padding: 2rem 3rem;
+  }
+
+  .detector-title {
+    font-size: clamp(2.2rem, 4vw, 3rem);
+  }
+
+  .probability {
+    font-size: clamp(2.5rem, 5vw, 3.5rem);
+  }
+
+  .features-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+
+  .team-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ===== Tablet Portrait/Mobile Landscape (481px - 767px) ===== */
+@media (min-width: 481px) and (max-width: 767px) {
+  .app-container,
+  .spam-detector-container,
+  .about-container {
+    padding: 1.5rem 2rem;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .hero-section {
+    flex-direction: column;
+    padding: 2.5rem 2rem;
+    text-align: center;
+    gap: 2.5rem;
+  }
+
+  .hero-content,
+  .hero-image {
+    max-width: 100%;
+  }
+
+  .hero-title {
+    font-size: clamp(2.2rem, 7vw, 3.2rem);
+  }
+
+  .hero-subtitle {
+    font-size: clamp(1.1rem, 3vw, 1.4rem);
+  }
+
+  .cta-buttons {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .cta-buttons .btn {
+    flex: 1 1 auto;
+    min-width: 200px;
+  }
+
+  .about-content {
+    padding: 2rem;
+  }
+
+  .features-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .team-grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .detector-title {
+    font-size: clamp(2rem, 6vw, 2.5rem);
+  }
+
+  .probability {
+    font-size: clamp(2.2rem, 7vw, 3rem);
+  }
+
+  /* Keep side by side but smaller on tablet */
+  .detector-top-layout {
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .input-section {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    padding: 1.25rem;
+  }
+
+  .model-selection-section {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    padding: 1.25rem;
+  }
+
+  .action-buttons {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .action-buttons .btn {
+    flex: 1 1 auto;
+    min-width: 140px;
+  }
+
+  .predict-btn {
+    padding: 1rem 1.5rem;
+    font-size: 1rem;
+  }
+
+  .navbar {
+    justify-content: space-between;
+    padding: 10px 15px;
+  }
+
+  .nav-links {
+    gap: 15px;
+    font-size: 18px;
+  }
+
+  .detector-layout {
+    flex-direction: column !important;
+  }
+
+  .input-section,
+  .result-section {
+    min-width: 0;
+    padding: 1.5rem;
+  }
+
+  .charts-count-2,
+  .charts-count-3 {
+    grid-template-columns: 1fr;
+  }
+
+  .charts-count-3 .model-chart-wrapper:nth-child(3) {
+    grid-column: auto;
+    max-width: 100%;
+  }
+
+  .model-selection-section {
+    padding: 1.5rem;
+  }
+
+  .model-card {
+    padding: 1rem;
+  }
+}
+
+/* ===== Mobile Portrait (320px - 480px) ===== */
+@media (max-width: 480px) {
+  html {
+    font-size: 14px;
+  }
+
+  .app-container,
+  .spam-detector-container,
+  .about-container {
+    padding: 1rem 1rem;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .hero-section {
+    flex-direction: column;
+    padding: 2rem 1rem;
+    text-align: center;
+    gap: 2rem;
+    min-height: auto;
+  }
+
+  .hero-content,
+  .hero-image {
+    max-width: 100%;
+  }
+
+  .hero-title {
+    font-size: clamp(1.8rem, 9vw, 2.5rem);
+    line-height: 1.1;
+  }
+
+  .hero-subtitle {
+    font-size: clamp(1rem, 4vw, 1.2rem);
+    letter-spacing: 2px;
+  }
+
+  .cta-buttons {
+    flex-direction: column;
+    width: 100%;
+    gap: 0.75rem;
+  }
+
+  .cta-buttons .btn {
+    width: 100%;
+    padding: 0.9rem 1.5rem;
+    font-size: 0.95rem;
+  }
+
+  .about-content {
+    padding: 1.5rem;
+  }
+
+  .features-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .team-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .team-member {
+    padding: 1.5rem;
+  }
+
+  .detector-title {
+    font-size: clamp(1.8rem, 8vw, 2.2rem);
+    margin-bottom: 1.5rem;
+  }
+
+  .probability {
+    font-size: clamp(2rem, 10vw, 2.5rem);
+  }
+
+  /* Keep side by side but smaller on mobile */
+  .detector-top-layout {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .input-section {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    padding: 1rem;
+  }
+
+  .model-selection-section {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    padding: 1rem;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .action-buttons .btn {
+    width: 100%;
+    padding: 0.85rem 1.2rem;
+    font-size: 0.9rem;
+  }
+
+  .predict-btn {
+    padding: 1rem;
+    font-size: 0.95rem;
+  }
+
+  .navbar {
+    padding: 8px 10px;
+    flex-wrap: wrap;
+  }
+
+  .nav-links {
+    width: 100%;
+    justify-content: center;
+    gap: 10px;
+    font-size: 16px;
+    padding: 8px;
+  }
+
+  .nav-links a {
+    padding: 6px 12px;
+    font-size: 16px;
+  }
+
+  .detector-layout {
+    flex-direction: column !important;
+  }
+
+  .input-section,
+  .result-section {
+    min-width: 0;
+    padding: 1.25rem;
+  }
+
+  .input-section {
+    padding: 1.25rem;
+  }
+
+  .email-body {
+    min-height: 250px;
+    font-size: 0.95rem;
+    padding: 0.85rem;
+  }
+
+  .word-count {
+    font-size: 0.85rem;
+  }
+
+  .model-selection-section {
+    padding: 1.25rem;
+  }
+
+  .model-card {
+    padding: 1rem 0.85rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .model-name {
+    font-size: 1rem;
+  }
+
+  .model-description {
+    font-size: 0.85rem;
+  }
+
+  .section-title {
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+  }
+
+  /* Reduce checkbox size on mobile */
+  .model-checkbox input[type="checkbox"] {
+    transform: scale(0.9);
+  }
+
+  .charts-count-2,
+  .charts-count-3 {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .charts-count-3 .model-chart-wrapper:nth-child(3) {
+    grid-column: auto;
+    max-width: 100%;
+  }
+
+  .multi-chart-analysis-panel {
+    padding: 1.25rem;
+    gap: 1.5rem;
+  }
+
+  .charts-section-title {
+    font-size: 1.2rem;
+  }
+
+  .analysis-panel {
+    padding: 1.25rem;
+  }
+
+  .main-result {
+    padding: 1.5rem;
+  }
+
+  .result-label {
+    font-size: 0.9rem;
+  }
+
+  .result-text {
+    font-size: 1.2rem;
+  }
+
+  .model-info,
+  .message-analysis {
+    padding: 1.25rem;
+  }
+
+  .model-info h4,
+  .message-analysis h4 {
+    font-size: 1.1rem;
+  }
+
+  .stat {
+    padding: 0.6rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+
+  .stat-label {
+    font-size: 0.85rem;
+  }
+
+  .stat-value {
+    font-size: 0.95rem;
+  }
+
+  .filter-buttons {
+    gap: 0.35rem;
+    flex-wrap: wrap;
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .filter-buttons button {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    flex-shrink: 1;
+    min-width: auto;
+  }
+
+  .scroll-to-top-btn {
+    bottom: 1rem;
+    right: 0.5rem;
+    width: 45px;
+    height: 45px;
+    font-size: 1.3rem;
+  }
+}
+
+/* ===== Extra Small Mobile (320px - 360px) ===== */
+@media (max-width: 360px) {
+  html {
+    font-size: 13px;
+  }
+
+  .app-container,
+  .spam-detector-container,
+  .about-container {
+    padding: 0.75rem;
+  }
+
+  .scroll-to-top-btn {
+    bottom: 0.5rem;
+    right: 0.5rem;
+    width: 36px;
+    height: 36px;
+    font-size: 1.1rem;
+  }
+
+  .hero-section {
+    padding: 1.5rem 0.75rem;
+  }
+
+  .hero-title {
+    font-size: 1.6rem;
+  }
+
+  .hero-subtitle {
+    font-size: 0.95rem;
+  }
+
+  .detector-title {
+    font-size: 1.6rem;
+  }
+
+  .probability {
+    font-size: 1.8rem;
+  }
+
+  .input-section,
+  .result-section,
+  .model-selection-section {
+    padding: 1rem;
+  }
+
+  .email-body {
+    min-height: 200px;
+    font-size: 0.9rem;
+    padding: 0.75rem;
+  }
+
+  .model-card {
+    padding: 0.85rem;
+  }
+
+  .btn {
+    padding: 0.75rem 1rem;
+    font-size: 0.85rem;
+  }
+
+  .nav-links {
+    font-size: 14px;
+    gap: 8px;
+  }
+
+  .nav-links a {
+    padding: 5px 10px;
+    font-size: 14px;
+  }
+}
+
+/* Global container and typography */
+.app-container,
+.spam-detector-container,
+.about-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+html { font-size: clamp(14px, 1.6vw, 16px); -webkit-font-smoothing: antialiased; }
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+/* Main detector layout: two-column on large screens, stacked on small */
+.detector-top-layout,
+.detector-layout,
+.results-grid {
+  display: grid;
+  gap: 1.25rem;
+}
+.detector-top-layout {
+  grid-template-columns: 1fr 1fr;
+}
+.results-grid {
+  grid-template-columns: 1fr 1fr;
+}
+
+/* make input and result panels flexible */
+.input-section, .result-section, .chart-container {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Form controls and buttons */
+textarea, input[type="text"], select {
+  width: 100%;
+  min-height: 84px;
+  padding: 0.75rem;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  resize: vertical;
+  font-size: 0.95rem;
+}
+.action-buttons {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+.action-buttons .btn,
+.filter-buttons button {
+  padding: 0.6rem 0.9rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+/* Charts and SVGs should scale */
+svg, .chart-container svg, .correlation-heatmap svg, .feature-importance-chart svg {
+  width: 100% !important;
+  height: auto !important;
+  display: block;
+}
+
+/* Chart header stack */
+.feature-importance-chart .chart-header,
+.correlation-heatmap .chart-header,
+.model-comparison-chart .chart-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  align-items: flex-start;
+}
+
+/* Remove boxed description look */
+.chart-description {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0;
+  margin: 0;
+  color: #444;
+}
+
+/* Small utility tweaks */
+.center-sm { text-align: center; }
+.hide-on-sm { display: block; }
+
+/* Additional responsive utilities */
+.hide-on-sm { display: block; }
+.hide-on-md { display: block; }
+
+@media (max-width: 767px) {
+  .hide-on-sm { display: none; }
+}
+
+@media (max-width: 1199px) {
+  .hide-on-md { display: none; }
+}
+
+/* Ensure legend and axis spacing on narrow charts */
+.correlation-heatmap svg g.legend { transform-box: fill-box; transform-origin: center; }
+
+/* Accessibility / touch targets */
+button, .btn, .filter-buttons button {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: rgba(0,0,0,0.05);
+}
+
+/* Clean up any global box elements that might force boxed description */
+.card, .panel, .box {
+  box-sizing: border-box;
+}
+
+.analysis-section,
+.analysis-results,
+.result-section {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Allow horizontal scroll only when necessary on very narrow screens */
+.chart-container {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Force SVG to be fluid if it wasn't already */
+svg, .chart-container svg, .correlation-heatmap svg, .feature-importance-chart svg {
+  width: 100% !important;
+  height: auto !important;
+  display: block;
+}
+
+/* make sure page switches to stacked layout on small screens */
+@media (max-width: 768px) {
+  .detector-layout { flex-direction: column !important; }
+  .input-section, .result-section { min-width: 0; }
+}
+
+.feature-distribution-chart {
+  display: flex;
+  flex-direction: column;
+  align-items: center;         /* center children horizontally */
+  justify-content: center;     /* center vertically in available area */
+  min-height: calc(100vh - 160px); /* adjust to account for header/footer height */
+  width: 100%;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 1rem;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.feature-distribution-chart .chart-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.feature-distribution-chart svg {
+  width: 100% !important;
+  max-width: 820px;
+  height: auto !important;
+  display: block;
+  margin: 0.75rem auto;
+}
+
+/* keep controls centered */
+.feature-distribution-chart .feature-selector {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.5rem;
+}
+
+/* Feature distribution chart responsive adjustments */
+@media (max-width: 480px) {
+  .feature-distribution-chart {
+    min-height: calc(100vh - 120px);
+    padding: 0.75rem;
+  }
+  .feature-distribution-chart svg {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 360px) {
+  .feature-distribution-chart {
+    min-height: calc(100vh - 100px);
+    padding: 0.5rem;
+  }
+  .feature-distribution-chart svg {
+    max-width: 100%;
+  }
+}

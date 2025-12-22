@@ -1,0 +1,127 @@
+/* Navbar */
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* Center the content */
+  background-color: #8b0000;
+  padding: 10px 20px;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+/* Navigation links */
+.nav-links {
+  list-style: none;
+  display: flex;
+  gap: 25px;
+  justify-content: center;
+  margin: 0;
+  padding: 10px;
+  font-size: 20px;
+  font-family: "Georgia", serif;
+  font-weight: bold;
+}
+
+.nav-links li {
+  display: inline;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: #ffffff;
+  font-weight: bold;
+  padding: 8px 15px;
+  transition: background 0.3s;
+}
+
+.nav-links a:hover {
+  background-color: #b22222;
+  border-radius: 5px;
+}
+
+/* Active link */
+.nav-links a.active {
+  background-color: #b22222 ;
+  border-radius: 5px;
+}
+
+/* Footer */
+footer {
+  text-align: center;
+  padding: 10px;
+  background-color: #8b0000;
+  color: #ffffff;
+  margin-top: auto; /* Push footer to the bottom */
+  width: 100%;
+  position: relative;
+  z-index: 1; /* Ensure footer is above tooltips */
+}
+
+/* Buttons */
+.btn {
+  padding: 1rem 2rem;
+  font-size: 1rem;
+  font-family: "Georgia", serif;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-radius: 4px;
+}
+
+.btn-primary {
+  background-color: #8b0000;
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #b22222;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn-secondary {
+  background-color: #f8d7da;
+  color: #8b0000;
+}
+
+.btn-secondary:hover {
+  background-color: #d0d0d0;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.predict-btn {
+  width: 100%;
+  padding: 1.2rem;
+  font-size: 1.1rem;
+  font-weight: bold;
+  margin-top: auto;
+}
+
+.predict-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* D3 Tooltips - Prevent appearing in footer area */
+.d3-tooltip {
+  position: fixed !important;
+  z-index: 1000 !important;
+  pointer-events: none !important;
+  max-width: 200px !important;
+  word-wrap: break-word !important;
+}
+
+/* Ensure tooltips don't appear in footer on small screens */
+@media (max-width: 480px) {
+  .d3-tooltip {
+    max-width: 150px !important;
+    font-size: 12px !important;
+    padding: 8px !important;
+  }
+}
+

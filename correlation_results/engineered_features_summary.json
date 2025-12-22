@@ -1,0 +1,18 @@
+{
+  "analysis_timestamp": "2025-10-06T22:35:32.074174",
+  "analysis_focus": "Engineered Features Only (TF-IDF Excluded)",
+  "datasets_analyzed": 1,
+  "summary_by_dataset": {
+    "Engineered_Features": {
+      "total_features": 57,
+      "significant_features": 45,
+      "strong_predictors": 17,
+      "top_predictor": {
+        "feature_name": "exclamation_ratio",
+        "correlation": 0.3185804584455895,
+        "abs_correlation": 0.3185804584455895,
+        "p_value": 2.903078858609062e-281
+      }
+    }
+  }
+}

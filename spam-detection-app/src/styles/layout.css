@@ -1,0 +1,116 @@
+/* Main content */
+.content {
+  flex: 1; /* Changed from flex-grow: 1 to flex: 1 */
+  padding: 20px;
+  text-align: center;
+  overflow-y: auto; /* Allows internal scrolling if content is too long */
+}
+
+/* Hide elements */
+.hidden {
+  display: none !important;
+}
+
+/* Page Titles */
+.page-title {
+  font-size: 3.5rem;
+  color: #4a6741;
+  margin-bottom: 2rem;
+  text-align: center;
+  font-family: "Milker", "Impact", "Arial Black", sans-serif;
+}
+
+/* Section Titles */
+.section-title {
+  color: #4a6741;
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 1.5rem;
+  font-family: "Milker", "Impact", "Arial Black", sans-serif;
+  letter-spacing: 1px;
+}
+
+/* Grid Systems */
+.results-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 2rem;
+  margin-top: 1rem;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 2rem;
+}
+
+/* Card Components */
+.feature-card {
+  background-color: #f9f9f9;
+  padding: 2rem;
+  border-radius: 8px;
+  border-left: 4px solid #4a6741;
+  transition: transform 0.3s;
+}
+
+.feature-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.feature-card h3 {
+  color: #4a6741;
+  margin-bottom: 1rem;
+  font-size: 1.7rem;
+}
+
+.feature-card p {
+  color: #666;
+  font-size: 1rem;
+}
+
+/* Analysis Panel */
+.analysis-panel {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 12px;
+  border: 2px solid #ddd;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  animation: slideUp 0.4s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Error Styling */
+.error {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid #f5c6cb;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.empty-state {
+  color: #999;
+  font-size: 1.2rem;
+  text-align: center;
+  font-style: italic;
+}

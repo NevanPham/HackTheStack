@@ -1,0 +1,35 @@
+SPAM DETECTION: ENGINEERED FEATURE CORRELATION ANALYSIS
+============================================================
+Generated: 2025-10-06 22:35:32
+Focus: Hand-crafted features only (TF-IDF features excluded)
+
+EXECUTIVE SUMMARY:
+This analysis examines correlations between engineered features and spam labels
+to identify the most interpretable and predictive features for spam detection.
+Results are sorted by absolute correlation strength (highest to lowest).
+
+ENGINEERED_FEATURES ANALYSIS:
+  Engineered Features: 57
+  Statistically Significant: 45 (78.9%)
+  Strong Predictors (|r|>0.1): 17 (29.8%)
+
+  TOP 5 PREDICTIVE FEATURES (by absolute correlation):
+    1. exclamation_ratio (r=0.319, |r|=0.319, p=0.0000) [SPAM indicator]
+    2. superlatives (r=0.315, |r|=0.315, p=0.0000) [SPAM indicator]
+    3. positive_emotions (r=0.313, |r|=0.313, p=0.0000) [SPAM indicator]
+    4. time_pressure (r=0.277, |r|=0.277, p=0.0000) [SPAM indicator]
+    5. spam_phrase_score (r=0.254, |r|=0.254, p=0.0000) [SPAM indicator]
+
+
+KEY INSIGHTS:
+- Results sorted by absolute correlation (strongest predictors first)
+- Features with |correlation| > 0.1 are strong predictors
+- P-values < 0.05 indicate statistical significance
+- Positive correlations = spam indicators, negative = ham indicators
+- Focus on interpretable features for model development
+
+RECOMMENDATIONS FOR ML MODELS:
+1. Use top 20-50 features for XGBoost feature selection
+2. Include emotional and urgency indicators in LSTM preprocessing
+3. Consider feature engineering patterns for new datasets
+4. Validate feature importance in final model training

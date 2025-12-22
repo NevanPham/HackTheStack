@@ -1,0 +1,9 @@
+/* Import all modular CSS files */
+@import './base.css';
+@import './components.css';
+@import './layout.css';
+@import './home.css';
+@import './about.css';
+@import './spam-detector.css';
+@import './visualizations.css';
+@import './responsive.css';

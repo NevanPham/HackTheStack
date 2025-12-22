@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir /s /b \"c:\\Users\\Admin\\Desktop\\Spam-Detection-COS30049\\spam-detection-app\")",
+      "Bash(dir /s /b \"c:\\Users\\Admin\\Desktop\\Spam-Detection-COS30049\")"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

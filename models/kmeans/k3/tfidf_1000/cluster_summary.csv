@@ -1,0 +1,4 @@
+cluster_id,size,spam_rate,dominant_source,source_distribution
+0,2161,0.21888014807959277,sms,"{'email': 375, 'sms': 835, 'mix_email_sms': 659, 'youtube': 292}"
+1,570,0.9982456140350877,mix_email_sms,"{'mix_email_sms': 566, 'email': 4}"
+2,481,0.09355509355509356,email,"{'email': 480, 'mix_email_sms': 1}"

@@ -1,0 +1,509 @@
+/* Interactive Confidence Chart Styles */
+.confidence-chart-container {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+  text-align: center;
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+/* Header with title and regenerate button */
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.chart-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0;
+}
+
+.regenerate-btn {
+  background: linear-gradient(135deg, #4a6741, #006b4d);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.regenerate-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #006b4d, #008f66);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 64, 48, 0.3);
+}
+
+.regenerate-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Chart wrapper with animation states */
+.chart-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  transition: opacity 0.3s ease;
+}
+
+.model-chart-header {
+  text-align: center;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e0e0e0;
+  width: 100%;
+}
+
+.model-chart-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #4a6741;
+  margin: 0 0 0.5rem 0;
+  font-family: "Milker", "Impact", "Arial Black", sans-serif;
+  letter-spacing: 0.5px;
+}
+
+.model-chart-description {
+  font-size: 0.9rem;
+  color: #666;
+  margin: 0;
+  font-style: italic;
+}
+
+.chart-wrapper.animating {
+  opacity: 0.7;
+}
+
+/* Chart.js container */
+.chart-container {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  margin: 28px auto 0;
+  overflow: visible; /* allow rings to draw outside without creating scrollbars */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chart-canvas {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+/* Ensure canvas/svg won't create scrollbars */
+.chart-canvas,
+.chart-canvas canvas,
+.chart-canvas svg {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+  overflow: visible !important;
+}
+
+/* Enhanced animated pulse ring surrounding the doughnut */
+.chart-pulse-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;                /* scale relative to chart container */
+  height: 100%;
+  border-radius: 50%;
+  border: 2px solid var(--pulse-color, rgba(74,103,65,0.14));
+  pointer-events: none;
+  animation: pulseRingEnhanced 2.5s ease-in-out infinite;
+  opacity: 0.9;
+  box-sizing: content-box;
+}
+
+/* Additional danger glow ring for high spam probability */
+.chart-danger-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 120%;                /* larger outer glow, still relative */
+  height: 120%;
+  border-radius: 50%;
+  border: 3px solid var(--danger-color, rgba(244,67,54,0.12));
+  pointer-events: none;
+  animation: dangerGlow 1.8s ease-in-out infinite alternate;
+  opacity: 0.7;
+  box-sizing: content-box;
+}
+
+/* Center overlay for Chart.js doughnut */
+.chart-center-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  text-align: center;
+}
+
+.confidence-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.confidence-number {
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 4px;
+  transition: color 0.3s ease;
+  animation: floatNumber 3s ease-in-out infinite;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.confidence-level {
+  font-size: 14px;
+  font-weight: 500;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Interactive prediction result */
+.prediction-result-interactive {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+  width: 100%;
+  margin-top: 12px;
+}
+
+.result-text-interactive {
+  font-size: 20px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-family: "Arial Black", "Impact", sans-serif;
+  padding: 12px 24px;
+  border-radius: 12px;
+  border: 2px solid;
+  transition: all 0.3s ease;
+  cursor: default;
+  position: relative;
+  overflow: hidden;
+  margin-top: 20px;
+}
+
+.result-text-interactive::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  transition: left 0.6s ease;
+}
+
+.result-text-interactive:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.result-text-interactive:hover::before {
+  left: 100%;
+}
+
+/* Confidence details panel */
+.confidence-details {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 12px 16px;
+  border: 1px solid #e9ecef;
+  min-width: 250px;
+}
+
+.detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.detail-item:last-child {
+  margin-bottom: 0;
+}
+
+.detail-label {
+  font-size: 13px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.detail-value {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* Interaction tips */
+.interaction-tips {
+  margin-top: 8px;
+}
+
+.interaction-tips p {
+  font-size: 11px;
+  color: #9ca3af;
+  font-style: italic;
+  margin: 0;
+}
+
+/* Responsive adjustments */
+/* Tablet Portrait/Mobile Landscape (481px - 767px) */
+@media (min-width: 481px) and (max-width: 767px) {
+  .confidence-chart-container {
+    padding: 18px;
+    min-height: 380px;
+  }
+  
+  .chart-header {
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+  
+  .chart-title {
+    font-size: 17px;
+  }
+  
+  .regenerate-btn {
+    font-size: 12px;
+    padding: 7px 14px;
+  }
+  
+  .chart-container {
+    width: 180px;
+    height: 180px;
+    margin: 24px auto 0;
+  }
+  
+  .confidence-number {
+    font-size: 28px;
+  }
+  
+  .confidence-level {
+    font-size: 13px;
+  }
+  
+  .result-text-interactive {
+    font-size: 19px;
+    padding: 11px 22px;
+    margin-top: 12px;
+  }
+  
+  .confidence-details {
+    min-width: 220px;
+    padding: 11px 14px;
+  }
+}
+
+/* Mobile Portrait (320px - 480px) */
+@media (max-width: 480px) {
+  .confidence-chart-container {
+    padding: 16px;
+    min-height: 350px;
+  }
+  
+  .chart-header {
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  
+  .chart-title {
+    font-size: 16px;
+  }
+  
+  .regenerate-btn {
+    font-size: 11px;
+    padding: 6px 12px;
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .chart-container {
+    width: 160px;
+    height: 160px;
+    margin: 22px auto 0;
+  }
+  
+  .confidence-number {
+    font-size: 26px;
+  }
+  
+  .confidence-level {
+    font-size: 12px;
+  }
+  
+  .result-text-interactive {
+    font-size: 18px;
+    padding: 10px 20px;
+    margin-top: 10px;
+  }
+  
+  .confidence-details {
+    min-width: 100%;
+    padding: 10px 12px;
+  }
+
+  .detail-item {
+    margin-bottom: 6px;
+  }
+
+  .detail-label,
+  .detail-value {
+    font-size: 12px;
+  }
+}
+
+/* Extra Small Mobile (320px - 360px) */
+@media (max-width: 360px) {
+  .confidence-chart-container {
+    padding: 14px;
+    min-height: 320px;
+  }
+  
+  .chart-container {
+    width: 140px;
+    height: 140px;
+    margin: 20px auto 0;
+  }
+  
+  .confidence-number {
+    font-size: 24px;
+  }
+  
+  .confidence-level {
+    font-size: 11px;
+  }
+  
+  .result-text-interactive {
+    font-size: 16px;
+    padding: 8px 16px;
+    margin-top: 8px;
+  }
+  
+  .confidence-details {
+    padding: 8px 10px;
+  }
+
+  .detail-label,
+  .detail-value {
+    font-size: 11px;
+  }
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.confidence-chart-container {
+  animation: fadeIn 0.6s ease-out;
+}
+
+/* Enhanced pulse animation with more dramatic glow effects */
+@keyframes pulseRingEnhanced {
+  0% {
+    transform: translate(-50%, -50%) scale(0.96);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.04);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(0.96);
+    opacity: 0.8;
+  }
+}
+
+/* Danger glow animation for high spam probability */
+@keyframes dangerGlow {
+  0% {
+    transform: translate(-50%, -50%) scale(0.98);
+    opacity: 0.5;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.02);
+    opacity: 0.9;
+  }
+}
+
+/* Floating animation for confidence number */
+@keyframes floatNumber {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes pulseRing {
+  0% {
+    transform: translate(-50%, -50%) scale(0.98);
+    opacity: 0.6;
+    box-shadow: 0 0 0 2px rgba(0,0,0,0), 0 0 0 10px rgba(0,0,0,0);
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.02);
+    opacity: 0.9;
+    box-shadow: 0 0 0 2px rgba(0,0,0,0), 0 0 0 6px rgba(0,0,0,0);
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(0.98);
+    opacity: 0.6;
+    box-shadow: 0 0 0 2px rgba(0,0,0,0), 0 0 0 10px rgba(0,0,0,0);
+  }
+}
+
+/* Loading animation for regenerate button */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.regenerate-btn:disabled {
+  animation: spin 1s linear infinite;
+}

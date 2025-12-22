@@ -1,0 +1,580 @@
+{
+  "overall_stats": {
+    "total_messages": 21431,
+    "spam_count": 7245,
+    "ham_count": 14186,
+    "spam_rate": 0.33806168634221456,
+    "sources": {
+      "mix_email_sms": 8175,
+      "email": 5728,
+      "sms": 5572,
+      "youtube": 1956
+    }
+  },
+  "feature_comparison": [
+    {
+      "feature": "char_count",
+      "group": "Basic",
+      "spam_mean": 471.28916494133887,
+      "ham_mean": 645.1306217397434,
+      "difference": -173.84145679840458,
+      "ratio": 0.7305329324941963
+    },
+    {
+      "feature": "word_count",
+      "group": "Basic",
+      "spam_mean": 89.11897860593513,
+      "ham_mean": 129.2514450867052,
+      "difference": -40.13246648077006,
+      "ratio": 0.6895008295354209
+    },
+    {
+      "feature": "unique_words",
+      "group": "Lexical",
+      "spam_mean": 55.65396825396825,
+      "ham_mean": 62.216763005780344,
+      "difference": -6.562794751812092,
+      "ratio": 0.8945172581350405
+    },
+    {
+      "feature": "max_word_repetition",
+      "group": "Lexical",
+      "spam_mean": 7.300897170462388,
+      "ham_mean": 12.695121951219512,
+      "difference": -5.394224780757124,
+      "ratio": 0.5750946858577481
+    },
+    {
+      "feature": "exclamation_count",
+      "group": "Character",
+      "spam_mean": 3.2764665286404417,
+      "ham_mean": 0.361906104610179,
+      "difference": 2.9145604240302627,
+      "ratio": 9.053360766516032
+    },
+    {
+      "feature": "consecutive_caps",
+      "group": "Character",
+      "spam_mean": 2.1995859213250517,
+      "ham_mean": 0.4086423234174538,
+      "difference": 1.7909435979075978,
+      "ratio": 5.382667910974156
+    },
+    {
+      "feature": "avg_sentence_length",
+      "group": "Basic",
+      "spam_mean": 9.766028776902543,
+      "ham_mean": 11.304205458363926,
+      "difference": -1.5381766814613833,
+      "ratio": 0.863928810642477
+    },
+    {
+      "feature": "sentence_count",
+      "group": "Basic",
+      "spam_mean": 7.977501725327812,
+      "ham_mean": 9.014662343155223,
+      "difference": -1.0371606178274106,
+      "ratio": 0.8849473692583816
+    },
+    {
+      "feature": "number_sequences",
+      "group": "Spam Indicators",
+      "spam_mean": 0.4738440303657695,
+      "ham_mean": 1.2620188918652193,
+      "difference": -0.7881748614994498,
+      "ratio": 0.375465084889058
+    },
+    {
+      "feature": "avg_word_length",
+      "group": "Basic",
+      "spam_mean": 5.247403878264811,
+      "ham_mean": 4.578874654735107,
+      "difference": 0.6685292235297045,
+      "ratio": 1.1460029535506864
+    },
+    {
+      "feature": "money_count",
+      "group": "Spam Indicators",
+      "spam_mean": 0.7998619737750172,
+      "ham_mean": 0.2193007190187509,
+      "difference": 0.5805612547562663,
+      "ratio": 3.6473294631862405
+    },
+    {
+      "feature": "currency_count",
+      "group": "Spam Indicators",
+      "spam_mean": 0.4941338854382333,
+      "ham_mean": 0.1185676018609897,
+      "difference": 0.3755662835772436,
+      "ratio": 4.16752871511699
+    },
+    {
+      "feature": "urgency_count",
+      "group": "Spam Indicators",
+      "spam_mean": 0.6415458937198067,
+      "ham_mean": 0.2925419427604681,
+      "difference": 0.34900395095933867,
+      "ratio": 2.1930048309178742
+    },
+    {
+      "feature": "suspicious_count",
+      "group": "Spam Indicators",
+      "spam_mean": 0.3538992408557626,
+      "ham_mean": 0.05308050190328493,
+      "difference": 0.3008187389524776,
+      "ratio": 6.66721730515252
+    },
+    {
+      "feature": "action_count",
+      "group": "Spam Indicators",
+      "spam_mean": 0.49910282953761215,
+      "ham_mean": 0.2892288171436628,
+      "difference": 0.20987401239394937,
+      "ratio": 1.7256331318110079
+    },
+    {
+      "feature": "question_count",
+      "group": "Character",
+      "spam_mean": 0.7275362318840579,
+      "ham_mean": 0.8872127449598195,
+      "difference": -0.15967651307576158,
+      "ratio": 0.820024549937013
+    },
+    {
+      "feature": "has_price",
+      "group": "Spam Indicators",
+      "spam_mean": 0.08806073153899241,
+      "ham_mean": 0.004652474270407444,
+      "difference": 0.08340825726858496,
+      "ratio": 18.927720266850702
+    },
+    {
+      "feature": "unique_ratio",
+      "group": "Lexical",
+      "spam_mean": 0.8402452760160818,
+      "ham_mean": 0.7951527708584716,
+      "difference": 0.04509250515761021,
+      "ratio": 1.0567092347662035
+    },
+    {
+      "feature": "upper_ratio",
+      "group": "Character",
+      "spam_mean": 0.07402118020275049,
+      "ham_mean": 0.03565930997009916,
+      "difference": 0.03836187023265133,
+      "ratio": 2.0757883499377385
+    },
+    {
+      "feature": "has_phone",
+      "group": "Spam Indicators",
+      "spam_mean": 0.12491373360938578,
+      "ham_mean": 0.09608064288735373,
+      "difference": 0.02883309072203205,
+      "ratio": 1.3000926082045097
+    },
+    {
+      "feature": "has_url",
+      "group": "Spam Indicators",
+      "spam_mean": 0.05603864734299517,
+      "ham_mean": 0.07352319187931763,
+      "difference": -0.017484544536322463,
+      "ratio": 0.7621900778597599
+    },
+    {
+      "feature": "exclamation_ratio",
+      "group": "Character",
+      "spam_mean": 0.011916330528328906,
+      "ham_mean": 0.0027440931350754543,
+      "difference": 0.009172237393253452,
+      "ratio": 4.342538660955924
+    },
+    {
+      "feature": "digit_ratio",
+      "group": "Character",
+      "spam_mean": 0.022242345397543634,
+      "ham_mean": 0.013647295221623388,
+      "difference": 0.008595050175920245,
+      "ratio": 1.6297988016190827
+    },
+    {
+      "feature": "punctuation_ratio",
+      "group": "Character",
+      "spam_mean": 0.02927135030024095,
+      "ham_mean": 0.0347589134254351,
+      "difference": -0.005487563125194148,
+      "ratio": 0.8421250095470884
+    },
+    {
+      "feature": "special_char_ratio",
+      "group": "Character",
+      "spam_mean": 0.05394608539130055,
+      "ham_mean": 0.05856059214573737,
+      "difference": -0.004614506754436816,
+      "ratio": 0.9212011595963224
+    },
+    {
+      "feature": "question_ratio",
+      "group": "Character",
+      "spam_mean": 0.0020586592198269297,
+      "ham_mean": 0.003088201206421159,
+      "difference": -0.0010295419865942292,
+      "ratio": 0.6666208197660345
+    },
+    {
+      "feature": "has_email",
+      "group": "Spam Indicators",
+      "spam_mean": 0.0008281573498964803,
+      "ham_mean": 0.000986888481601579,
+      "difference": -0.0001587311317050986,
+      "ratio": 0.8391600118308193
+    }
+  ],
+  "top_discriminative": [
+    {
+      "feature": "has_price",
+      "group": "Spam Indicators",
+      "spam_mean": 0.08806073153899241,
+      "ham_mean": 0.004652474270407444,
+      "difference": 0.08340825726858496,
+      "ratio": 18.927720266850702
+    },
+    {
+      "feature": "exclamation_count",
+      "group": "Character",
+      "spam_mean": 3.2764665286404417,
+      "ham_mean": 0.361906104610179,
+      "difference": 2.9145604240302627,
+      "ratio": 9.053360766516032
+    },
+    {
+      "feature": "suspicious_count",
+      "group": "Spam Indicators",
+      "spam_mean": 0.3538992408557626,
+      "ham_mean": 0.05308050190328493,
+      "difference": 0.3008187389524776,
+      "ratio": 6.66721730515252
+    },
+    {
+      "feature": "consecutive_caps",
+      "group": "Character",
+      "spam_mean": 2.1995859213250517,
+      "ham_mean": 0.4086423234174538,
+      "difference": 1.7909435979075978,
+      "ratio": 5.382667910974156
+    },
+    {
+      "feature": "exclamation_ratio",
+      "group": "Character",
+      "spam_mean": 0.011916330528328906,
+      "ham_mean": 0.0027440931350754543,
+      "difference": 0.009172237393253452,
+      "ratio": 4.342538660955924
+    },
+    {
+      "feature": "currency_count",
+      "group": "Spam Indicators",
+      "spam_mean": 0.4941338854382333,
+      "ham_mean": 0.1185676018609897,
+      "difference": 0.3755662835772436,
+      "ratio": 4.16752871511699
+    },
+    {
+      "feature": "money_count",
+      "group": "Spam Indicators",
+      "spam_mean": 0.7998619737750172,
+      "ham_mean": 0.2193007190187509,
+      "difference": 0.5805612547562663,
+      "ratio": 3.6473294631862405
+    },
+    {
+      "feature": "urgency_count",
+      "group": "Spam Indicators",
+      "spam_mean": 0.6415458937198067,
+      "ham_mean": 0.2925419427604681,
+      "difference": 0.34900395095933867,
+      "ratio": 2.1930048309178742
+    },
+    {
+      "feature": "upper_ratio",
+      "group": "Character",
+      "spam_mean": 0.07402118020275049,
+      "ham_mean": 0.03565930997009916,
+      "difference": 0.03836187023265133,
+      "ratio": 2.0757883499377385
+    },
+    {
+      "feature": "action_count",
+      "group": "Spam Indicators",
+      "spam_mean": 0.49910282953761215,
+      "ham_mean": 0.2892288171436628,
+      "difference": 0.20987401239394937,
+      "ratio": 1.7256331318110079
+    },
+    {
+      "feature": "digit_ratio",
+      "group": "Character",
+      "spam_mean": 0.022242345397543634,
+      "ham_mean": 0.013647295221623388,
+      "difference": 0.008595050175920245,
+      "ratio": 1.6297988016190827
+    },
+    {
+      "feature": "has_phone",
+      "group": "Spam Indicators",
+      "spam_mean": 0.12491373360938578,
+      "ham_mean": 0.09608064288735373,
+      "difference": 0.02883309072203205,
+      "ratio": 1.3000926082045097
+    },
+    {
+      "feature": "avg_word_length",
+      "group": "Basic",
+      "spam_mean": 5.247403878264811,
+      "ham_mean": 4.578874654735107,
+      "difference": 0.6685292235297045,
+      "ratio": 1.1460029535506864
+    },
+    {
+      "feature": "unique_ratio",
+      "group": "Lexical",
+      "spam_mean": 0.8402452760160818,
+      "ham_mean": 0.7951527708584716,
+      "difference": 0.04509250515761021,
+      "ratio": 1.0567092347662035
+    },
+    {
+      "feature": "special_char_ratio",
+      "group": "Character",
+      "spam_mean": 0.05394608539130055,
+      "ham_mean": 0.05856059214573737,
+      "difference": -0.004614506754436816,
+      "ratio": 0.9212011595963224
+    }
+  ],
+  "distributions": {
+    "word_count": {
+      "spam": {
+        "min": 1.0,
+        "max": 6129.0,
+        "mean": 89.11897860593513,
+        "median": 45.0,
+        "std": 216.11333529921924
+      },
+      "ham": {
+        "min": 1.0,
+        "max": 8477.0,
+        "mean": 129.2514450867052,
+        "median": 35.0,
+        "std": 269.965006165208
+      }
+    },
+    "money_count": {
+      "spam": {
+        "min": 0.0,
+        "max": 7.0,
+        "mean": 0.7998619737750172,
+        "median": 0.0,
+        "std": 1.0921005361994192
+      },
+      "ham": {
+        "min": 0.0,
+        "max": 7.0,
+        "mean": 0.2193007190187509,
+        "median": 0.0,
+        "std": 0.5304114472350102
+      }
+    },
+    "urgency_count": {
+      "spam": {
+        "min": 0.0,
+        "max": 5.0,
+        "mean": 0.6415458937198067,
+        "median": 0.0,
+        "std": 0.8402241528308364
+      },
+      "ham": {
+        "min": 0.0,
+        "max": 3.0,
+        "mean": 0.2925419427604681,
+        "median": 0.0,
+        "std": 0.4934502939873044
+      }
+    },
+    "has_url": {
+      "spam": {
+        "min": 0.0,
+        "max": 1.0,
+        "mean": 0.05603864734299517,
+        "median": 0.0,
+        "std": 0.23001221643627562
+      },
+      "ham": {
+        "min": 0.0,
+        "max": 1.0,
+        "mean": 0.07352319187931763,
+        "median": 0.0,
+        "std": 0.2610025559589861
+      }
+    },
+    "exclamation_count": {
+      "spam": {
+        "min": 0.0,
+        "max": 695.0,
+        "mean": 3.2764665286404417,
+        "median": 2.0,
+        "std": 9.147943780986484
+      },
+      "ham": {
+        "min": 0.0,
+        "max": 191.0,
+        "mean": 0.361906104610179,
+        "median": 0.0,
+        "std": 2.2071434328479853
+      }
+    },
+    "upper_ratio": {
+      "spam": {
+        "min": 0.0,
+        "max": 0.9193548387096774,
+        "mean": 0.07402118020275049,
+        "median": 0.0238611713665943,
+        "std": 0.1368433098640733
+      },
+      "ham": {
+        "min": 0.0,
+        "max": 1.0,
+        "mean": 0.03565930997009916,
+        "median": 0.0212765957446808,
+        "std": 0.08405834297877787
+      }
+    },
+    "consecutive_caps": {
+      "spam": {
+        "min": 0.0,
+        "max": 77.0,
+        "mean": 2.1995859213250517,
+        "median": 0.0,
+        "std": 6.047271436101622
+      },
+      "ham": {
+        "min": 0.0,
+        "max": 713.0,
+        "mean": 0.4086423234174538,
+        "median": 0.0,
+        "std": 6.619930708383175
+      }
+    },
+    "number_sequences": {
+      "spam": {
+        "min": 0.0,
+        "max": 59.0,
+        "mean": 0.4738440303657695,
+        "median": 0.0,
+        "std": 1.8030548592530804
+      },
+      "ham": {
+        "min": 0.0,
+        "max": 170.0,
+        "mean": 1.2620188918652193,
+        "median": 0.0,
+        "std": 4.028687013637574
+      }
+    }
+  },
+  "correlations": [
+    {
+      "feature": "money_count",
+      "correlation": 0.33683312340541927
+    },
+    {
+      "feature": "suspicious_count",
+      "correlation": 0.328743479666709
+    },
+    {
+      "feature": "urgency_count",
+      "correlation": 0.25263638553349743
+    },
+    {
+      "feature": "exclamation_count",
+      "correlation": 0.23852192360872346
+    },
+    {
+      "feature": "has_price",
+      "correlation": 0.22136230406026286
+    },
+    {
+      "feature": "exclamation_ratio",
+      "correlation": 0.1882195317733523
+    },
+    {
+      "feature": "upper_ratio",
+      "correlation": 0.17044338746260518
+    },
+    {
+      "feature": "action_count",
+      "correlation": 0.14600798068314824
+    },
+    {
+      "feature": "consecutive_caps",
+      "correlation": 0.13059423030971654
+    },
+    {
+      "feature": "digit_ratio",
+      "correlation": 0.11063018962588062
+    },
+    {
+      "feature": "unique_ratio",
+      "correlation": 0.1078296780023684
+    },
+    {
+      "feature": "number_sequences",
+      "correlation": -0.10771836266528698
+    },
+    {
+      "feature": "currency_count",
+      "correlation": 0.09679343963388178
+    },
+    {
+      "feature": "avg_sentence_length",
+      "correlation": -0.0858866480723717
+    },
+    {
+      "feature": "max_word_repetition",
+      "correlation": -0.07907148006655759
+    },
+    {
+      "feature": "word_count",
+      "correlation": -0.07481767117319274
+    },
+    {
+      "feature": "punctuation_ratio",
+      "correlation": -0.06908849543201084
+    },
+    {
+      "feature": "char_count",
+      "correlation": -0.06505528084643769
+    },
+    {
+      "feature": "question_ratio",
+      "correlation": -0.05976457831192784
+    },
+    {
+      "feature": "has_phone",
+      "correlation": 0.044339122736533176
+    }
+  ],
+  "source_distribution": {
+    "spam": {
+      "mix_email_sms": 4125,
+      "email": 1368,
+      "youtube": 1005,
+      "sms": 747
+    },
+    "ham": {
+      "sms": 4825,
+      "email": 4360,
+      "mix_email_sms": 4050,
+      "youtube": 951
+    }
+  }
+}

@@ -1,0 +1,89 @@
+{
+  "vocab_size": 10000,
+  "max_length": 128,
+  "num_train_samples": 12003,
+  "num_test_samples": 3212,
+  "padding_token": 0,
+  "unknown_token": 1,
+  "min_freq": 2,
+  "sequence_length_stats": {
+    "mean": 61.73164640157739,
+    "median": 48.0,
+    "max": 128,
+    "percentile_95": 128
+  },
+  "class_distribution": {
+    "train_spam_rate": 0.42747646421727903,
+    "test_spam_rate": 0.33841843088418433
+  },
+  "shared_preprocessing": {
+    "total_records": 15215,
+    "train_records": 12003,
+    "test_records": 3212,
+    "overall_spam_rate": 0.40867564903056197,
+    "source_distribution": {
+      "mix_email_sms": 6138,
+      "email": 4181,
+      "sms": 2951,
+      "youtube": 1945
+    },
+    "spam_rate_by_source": {
+      "email": 0.3271944510882564,
+      "mix_email_sms": 0.5047246660149886,
+      "sms": 0.2531345306675703,
+      "youtube": 0.5167095115681234
+    },
+    "text_length_stats": {
+      "count": 15215.0,
+      "mean": 566.6498192573118,
+      "std": 1229.5344064834062,
+      "min": 3.0,
+      "25%": 95.5,
+      "50%": 235.0,
+      "75%": 562.0,
+      "max": 43267.0
+    },
+    "kfold_info": [
+      {
+        "fold": 1,
+        "train_size": 9602,
+        "val_size": 2401,
+        "train_spam_rate": 42.75151010206207,
+        "val_spam_rate": 42.73219491878384
+      },
+      {
+        "fold": 2,
+        "train_size": 9602,
+        "val_size": 2401,
+        "train_spam_rate": 42.75151010206207,
+        "val_spam_rate": 42.73219491878384
+      },
+      {
+        "fold": 3,
+        "train_size": 9602,
+        "val_size": 2401,
+        "train_spam_rate": 42.75151010206207,
+        "val_spam_rate": 42.73219491878384
+      },
+      {
+        "fold": 4,
+        "train_size": 9603,
+        "val_size": 2400,
+        "train_spam_rate": 42.736644798500464,
+        "val_spam_rate": 42.791666666666664
+      },
+      {
+        "fold": 5,
+        "train_size": 9603,
+        "val_size": 2400,
+        "train_spam_rate": 42.74705821097574,
+        "val_spam_rate": 42.75
+      }
+    ],
+    "columns": [
+      "cleaned_text",
+      "label",
+      "source"
+    ]
+  }
+}

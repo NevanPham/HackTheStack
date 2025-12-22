@@ -1,0 +1,22 @@
+pandas
+pyarrow
+fastparquet
+numpy
+scikit-learn==1.7.2
+seaborn
+matplotlib
+nltk==3.9.1
+xgboost==3.0.5
+torch==2.8.0
+joblib==1.5.2
+fastapi
+uvicorn
+# ---------------------------------------------
+# Frontend (React) dependencies - for reference
+# Note: These are JavaScript packages; install with npm/yarn, not pip.
+# npm i react react-dom chart.js react-chartjs-2 vite
+# react==18.x
+# react-dom==18.x
+# chart.js==4.x
+# react-chartjs-2==5.x
+# vite==5.x

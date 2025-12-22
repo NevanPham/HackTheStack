@@ -1,0 +1,555 @@
+/* Hint text under the legend to guide users about toggling datasets */
+.legend-hint {
+    margin-top: 8px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: #374151; /* Gray-700 */
+  }
+  /* Model Comparison Chart Styles */
+  .model-comparison-chart-container {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      border: 1px solid #e5e7eb;
+      min-height: 400px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      margin-top: 16px;
+  }
+  
+  /* Chart wrapper with animation states */
+  .chart-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 16px;
+      transition: opacity 0.3s ease;
+  }
+
+/* Header styled similar to ConfidenceChart but smaller */
+.model-comparison-header {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    align-items: start;
+}
+
+.model-summary-header-item {
+    text-align: center;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 6px;
+}
+
+.model-chart-title.small {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #4a6741;
+    margin: 0 0 2px 0;
+    font-family: "Milker", "Impact", "Arial Black", sans-serif;
+    letter-spacing: 0.5px;
+}
+
+.model-chart-description.small {
+    font-size: 0.8rem;
+    color: #666;
+    margin: 0;
+    font-style: italic;
+}
+  
+  .chart-wrapper.animating {
+      opacity: 0.7;
+  }
+  
+  /* Chart.js container for bar chart */
+  .comparison-chart-container {
+      position: relative;
+      width: 100%;
+      height: 350px;
+      margin: 0 auto;
+  }
+  
+  .chart-canvas {
+      width: 100%;
+      height: 100%;
+      position: relative;
+  }
+
+  /* Custom legend pills styled like chart 1 label, smaller */
+  .custom-legend-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      justify-content: flex-start;
+      margin-top: 25px;
+  }
+
+  .legend-instructions {
+      font-size: 14px;
+      color: black; /* gray-500 */
+      font-style: italic;
+      white-space: nowrap;
+      font-weight: 700; /* bold */
+  }
+  .comparison-legend {
+      display: flex;
+      flex-wrap: nowrap; /* one line */
+      gap: 6px;
+      justify-content: flex-start; /* left align */
+      align-items: center;
+      margin-top: 0; /* spacing handled by container */
+  }
+ 
+  .legend-pill.small {
+      font-size: 9px; /* smaller */
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: -0.5px;
+      font-family: "Arial Black", "Impact", sans-serif;
+      padding: 4px 10px; /* smaller */
+      border-radius: 10px;
+      border: 1.5px solid; /* slightly thinner */
+      transition: transform 0.15s ease, box-shadow 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+      transform-origin: center;
+      cursor: pointer;
+      background-clip: padding-box;
+      background-color: #ffffff;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+  }
+ 
+  .legend-pill.small:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+ 
+  .legend-pill.small.muted {
+      opacity: 0.55;
+      filter: grayscale(10%);
+      transform: scale(0.8); /* visibly smaller when unselected */
+  }
+  
+  /* Pulse rings overlay container */
+  .pulse-rings-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+  }
+  
+  /* Performance summary section */
+  .performance-summary {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 20px;
+      border: 1px solid #e9ecef;
+  }
+  
+  .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 16px;
+  }
+  
+  /* Individual model summary cards */
+  .model-summary-card {
+      background: white;
+      border-radius: 8px;
+      padding: 16px;
+      border: 1px solid #e0e0e0;
+      transition: all 0.3s ease;
+  }
+  
+  .model-summary-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      border-color: #4a6741;
+  }
+  
+  .model-summary-header {
+      margin-bottom: 12px;
+      text-align: center;
+      border-bottom: 1px solid #f1f5f9;
+      padding-bottom: 8px;
+  }
+  
+  .model-summary-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: #4a6741;
+      margin: 0 0 4px 0;
+      font-family: "Milker", "Impact", "Arial Black", sans-serif;
+      letter-spacing: 0.5px;
+  }
+  
+  .model-summary-desc {
+      font-size: 12px;
+      color: #666;
+      margin: 0;
+      font-style: italic;
+  }
+  
+  /* Summary statistics */
+  .summary-stats {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+  }
+  
+  .summary-stat {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 0;
+  }
+  
+  .stat-label {
+      font-size: 13px;
+      color: #6b7280;
+      font-weight: 500;
+  }
+  
+  .stat-value {
+      font-size: 14px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 4px;
+      min-width: 45px;
+      text-align: center;
+  }
+  
+  /* Color coding for different metrics */
+  .stat-value.accuracy {
+      color: #16a34a;
+      background-color: rgba(34, 197, 94, 0.1);
+  }
+  
+  .stat-value.spam-rate {
+      color: #dc2626;
+      background-color: rgba(239, 68, 68, 0.1);
+  }
+  
+  .stat-value.safe-rate {
+      color: #2563eb;
+      background-color: rgba(59, 130, 246, 0.1);
+  }
+  
+  .stat-value.confidence {
+      color: #7c3aed;
+      background-color: rgba(168, 85, 247, 0.1);
+  }
+  
+  /* Responsive adjustments */
+  /* Laptop/Tablet Landscape (768px - 1199px) */
+  @media (min-width: 768px) and (max-width: 1199px) {
+      .summary-grid {
+          grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+          gap: 14px;
+      }
+      
+      .comparison-chart-container {
+          height: 320px;
+      }
+  }
+
+  /* Tablet Portrait/Mobile Landscape (481px - 767px) */
+  @media (min-width: 481px) and (max-width: 767px) {
+      .model-comparison-chart-container {
+          padding: 18px;
+          min-height: 380px;
+          margin-top: 18px;
+      }
+      
+      .chart-wrapper {
+          gap: 18px;
+      }
+      
+      .comparison-chart-container {
+          height: 300px;
+      }
+      
+      .performance-summary {
+          padding: 18px;
+      }
+      
+      .summary-grid {
+          grid-template-columns: 1fr;
+          gap: 14px;
+      }
+      
+      .model-summary-card {
+          padding: 14px;
+      }
+      
+      .model-summary-name {
+          font-size: 15px;
+      }
+      
+      .model-summary-desc {
+          font-size: 12px;
+      }
+      
+      .stat-label {
+          font-size: 13px;
+      }
+      
+      .stat-value {
+          font-size: 14px;
+          padding: 3px 7px;
+          min-width: 45px;
+      }
+  }
+  
+  /* Mobile Portrait (320px - 480px) */
+  @media (max-width: 480px) {
+      .model-comparison-chart-container {
+          padding: 16px;
+          min-height: 350px;
+          margin-top: 16px;
+          margin-bottom: 60px;
+      }
+      
+      .chart-wrapper {
+          gap: 16px;
+      }
+      
+      .comparison-chart-container {
+          height: 280px;
+      }
+
+      .model-comparison-header {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 10px;
+      }
+      
+      .performance-summary {
+          padding: 16px;
+      }
+      
+      .summary-grid {
+          grid-template-columns: 1fr;
+          gap: 12px;
+      }
+      
+      .model-summary-card {
+          padding: 12px;
+      }
+      
+      .model-summary-name {
+          font-size: 14px;
+      }
+      
+      .model-summary-desc {
+          font-size: 11px;
+      }
+      
+      .stat-label {
+          font-size: 12px;
+      }
+      
+      .stat-value {
+          font-size: 13px;
+          padding: 2px 6px;
+          min-width: 40px;
+      }
+
+      .summary-stats {
+          gap: 6px;
+      }
+      
+      .summary-stat {
+          padding: 4px 0;
+      }
+
+      /* Stack legend instructions and buttons vertically on mobile */
+      .custom-legend-row {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 8px;
+          margin-bottom: 35px;
+      }
+
+      .legend-instructions {
+          white-space: normal;
+          font-size: 12px;
+          margin-bottom: 4px;
+      }
+
+      .comparison-legend {
+          width: 100%;
+          flex-wrap: wrap;
+          gap: 4px;
+          margin-bottom: 12px;
+      }
+
+      /* Make buttons much smaller on mobile */
+      .legend-pill.small {
+          font-size: 7px;
+          padding: 3px 6px;
+          border-radius: 8px;
+          border-width: 1px;
+      }
+  }
+
+  /* Extra Small Mobile (320px - 360px) */
+  @media (max-width: 360px) {
+      .model-comparison-chart-container {
+          padding: 14px;
+          min-height: 320px;
+          margin-top: 14px;
+      }
+
+      .comparison-chart-container {
+          height: 250px;
+      }
+
+      .performance-summary {
+          padding: 14px;
+      }
+
+      .model-summary-card {
+          padding: 10px;
+      }
+
+      .model-summary-name {
+          font-size: 13px;
+      }
+
+      .model-summary-desc {
+          font-size: 10px;
+      }
+
+      .stat-label {
+          font-size: 11px;
+      }
+
+      .stat-value {
+          font-size: 12px;
+          padding: 2px 5px;
+          min-width: 35px;
+      }
+
+      /* Even smaller buttons on extra small mobile */
+      .legend-pill.small {
+          font-size: 6px;
+          padding: 2px 5px;
+          border-radius: 6px;
+      }
+
+      .legend-instructions {
+          font-size: 11px;
+      }
+  }
+  
+  /* Animations */
+  @keyframes fadeIn {
+      from {
+          opacity: 0;
+          transform: scale(0.98);
+      }
+      to {
+          opacity: 1;
+          transform: scale(1);
+      }
+  }
+  
+  .model-comparison-chart-container {
+      animation: fadeIn 0.6s ease-out;
+  }
+  
+  /* Bar pulse ring animations - the ones you liked */
+  .bar-pulse-ring {
+      border: 2px solid transparent;
+      border-radius: 8px;
+      animation: barPulseRing 2.8s ease-in-out infinite;
+      opacity: 0.7;
+      transition: all 0.3s ease;
+  }
+  
+  .bar-pulse-ring.hovered {
+      animation: barPulseRingHover 1.5s ease-in-out infinite;
+      opacity: 1;
+      border-width: 3px;
+      transform: scale(1.1);
+  }
+  
+  /* Pulse animations for bars */
+  @keyframes barPulseRing {
+      0% {
+          transform: scale(0.95);
+          opacity: 0.5;
+          box-shadow: 0 0 0 2px rgba(0,0,0,0), 0 0 0 6px rgba(0,0,0,0);
+      }
+      50% {
+          transform: scale(1.02);
+          opacity: 0.8;
+          box-shadow: 0 0 0 2px rgba(0,0,0,0.1), 0 0 8px rgba(0,0,0,0.2);
+      }
+      100% {
+          transform: scale(0.95);
+          opacity: 0.5;
+          box-shadow: 0 0 0 2px rgba(0,0,0,0), 0 0 0 6px rgba(0,0,0,0);
+      }
+  }
+  
+  @keyframes barPulseRingHover {
+      0% {
+          transform: scale(1.08);
+          opacity: 0.9;
+          box-shadow: 0 0 0 3px rgba(0,0,0,0.15), 0 0 12px rgba(0,0,0,0.3);
+      }
+      50% {
+          transform: scale(1.15);
+          opacity: 1;
+          box-shadow: 0 0 0 3px rgba(0,0,0,0.2), 0 0 16px rgba(0,0,0,0.4);
+      }
+      100% {
+          transform: scale(1.08);
+          opacity: 0.9;
+          box-shadow: 0 0 0 3px rgba(0,0,0,0.15), 0 0 12px rgba(0,0,0,0.3);
+      }
+  }
+  
+  /* Chart legend enhancements */
+  .model-comparison-chart-container .chart-canvas canvas {
+      border-radius: 8px;
+  }
+  
+  /* Hover effects for better interactivity */
+  .model-summary-card {
+      cursor: default;
+  }
+  
+  .summary-stat:hover .stat-value {
+      transform: scale(1.05);
+      transition: transform 0.2s ease;
+  }
+  
+  /* Loading states */
+  .chart-wrapper.loading {
+      opacity: 0.6;
+      pointer-events: none;
+  }
+  
+  .chart-wrapper.loading::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 40px;
+      height: 40px;
+      margin: -20px 0 0 -20px;
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #4a6741;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+  }
+  
+  @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+  }

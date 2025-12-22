@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backend Connection Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .status.success {
+            background: #4CAF50;
+            color: white;
+        }
+        .status.error {
+            background: #f44336;
+            color: white;
+        }
+        .status.pending {
+            background: #FF9800;
+            color: white;
+        }
+        button {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        button:hover {
+            background: #1976D2;
+        }
+        pre {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            max-height: 300px;
+        }
+        .log {
+            font-size: 12px;
+            color: #666;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Backend Connection Diagnostic Tool</h1>
+
+        <div class="test-section">
+            <h3>Test 1: Health Check <span id="test1-status" class="status pending">PENDING</span></h3>
+            <p>Testing if backend server is running...</p>
+            <button onclick="testHealthCheck()">Run Test</button>
+            <pre id="test1-result"></pre>
+        </div>
+
+        <div class="test-section">
+            <h3>Test 2: Model Info <span id="test2-status" class="status pending">PENDING</span></h3>
+            <p>Checking if models are loaded...</p>
+            <button onclick="testModelInfo()">Run Test</button>
+            <pre id="test2-result"></pre>
+        </div>
+
+        <div class="test-section">
+            <h3>Test 3: Prediction (Spam Text) <span id="test3-status" class="status pending">PENDING</span></h3>
+            <p>Testing spam prediction with: "Winner! Free money! Click now!"</p>
+            <button onclick="testPrediction()">Run Test</button>
+            <pre id="test3-result"></pre>
+        </div>
+
+        <div class="test-section">
+            <h3>Test 4: Same Text Multiple Times <span id="test4-status" class="status pending">PENDING</span></h3>
+            <p>Testing consistency - same text should give same results</p>
+            <button onclick="testConsistency()">Run Test</button>
+            <pre id="test4-result"></pre>
+        </div>
+
+        <button onclick="runAllTests()" style="font-size: 16px; padding: 15px 30px; margin-top: 20px;">
+            🚀 Run All Tests
+        </button>
+
+        <div class="log" id="console-log"></div>
+    </div>
+
+    <script>
+        const BACKEND_URL = 'http://localhost:8000';
+
+        function log(message) {
+            const logDiv = document.getElementById('console-log');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `[${timestamp}] ${message}<br>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        async function testHealthCheck() {
+            const statusEl = document.getElementById('test1-status');
+            const resultEl = document.getElementById('test1-result');
+
+            statusEl.textContent = 'TESTING...';
+            statusEl.className = 'status pending';
+
+            try {
+                log('Testing health check endpoint...');
+                const response = await fetch(`${BACKEND_URL}/`);
+                const data = await response.json();
+
+                resultEl.textContent = JSON.stringify(data, null, 2);
+                statusEl.textContent = 'SUCCESS';
+                statusEl.className = 'status success';
+                log('✓ Health check passed');
+            } catch (error) {
+                resultEl.textContent = `Error: ${error.message}`;
+                statusEl.textContent = 'FAILED';
+                statusEl.className = 'status error';
+                log(`✗ Health check failed: ${error.message}`);
+            }
+        }
+
+        async function testModelInfo() {
+            const statusEl = document.getElementById('test2-status');
+            const resultEl = document.getElementById('test2-result');
+
+            statusEl.textContent = 'TESTING...';
+            statusEl.className = 'status pending';
+
+            try {
+                log('Testing model info endpoint...');
+                const response = await fetch(`${BACKEND_URL}/models/info`);
+                const data = await response.json();
+
+                resultEl.textContent = JSON.stringify(data, null, 2);
+                statusEl.textContent = 'SUCCESS';
+                statusEl.className = 'status success';
+                log('✓ Model info retrieved');
+            } catch (error) {
+                resultEl.textContent = `Error: ${error.message}`;
+                statusEl.textContent = 'FAILED';
+                statusEl.className = 'status error';
+                log(`✗ Model info failed: ${error.message}`);
+            }
+        }
+
+        async function testPrediction() {
+            const statusEl = document.getElementById('test3-status');
+            const resultEl = document.getElementById('test3-result');
+
+            statusEl.textContent = 'TESTING...';
+            statusEl.className = 'status pending';
+
+            try {
+                log('Testing prediction endpoint...');
+                const response = await fetch(`${BACKEND_URL}/predict`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        text: 'Winner! Free money! Click now to claim your prize!',
+                        models: ['xgboost']
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+                }
+
+                const data = await response.json();
+                resultEl.textContent = JSON.stringify(data, null, 2);
+                statusEl.textContent = 'SUCCESS';
+                statusEl.className = 'status success';
+                log('✓ Prediction succeeded');
+            } catch (error) {
+                resultEl.textContent = `Error: ${error.message}`;
+                statusEl.textContent = 'FAILED';
+                statusEl.className = 'status error';
+                log(`✗ Prediction failed: ${error.message}`);
+            }
+        }
+
+        async function testConsistency() {
+            const statusEl = document.getElementById('test4-status');
+            const resultEl = document.getElementById('test4-result');
+
+            statusEl.textContent = 'TESTING...';
+            statusEl.className = 'status pending';
+
+            try {
+                log('Testing consistency with 3 identical requests...');
+                const testText = 'Free prize! You have won $1000!';
+
+                const results = [];
+                for (let i = 0; i < 3; i++) {
+                    const response = await fetch(`${BACKEND_URL}/predict`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            text: testText,
+                            models: ['xgboost']
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    results.push({
+                        attempt: i + 1,
+                        spam_probability: data.predictions[0].spam_probability,
+                        prediction: data.predictions[0].prediction
+                    });
+                }
+
+                const probabilities = results.map(r => r.spam_probability);
+                const allSame = probabilities.every(p => p === probabilities[0]);
+
+                resultEl.textContent = JSON.stringify(results, null, 2) +
+                    `\n\nConsistency: ${allSame ? '✓ PASS - All predictions identical' : '✗ FAIL - Predictions differ'}`;
+
+                if (allSame) {
+                    statusEl.textContent = 'SUCCESS';
+                    statusEl.className = 'status success';
+                    log('✓ Consistency test passed - predictions are deterministic');
+                } else {
+                    statusEl.textContent = 'INCONSISTENT';
+                    statusEl.className = 'status error';
+                    log('✗ Consistency test failed - predictions are random');
+                }
+            } catch (error) {
+                resultEl.textContent = `Error: ${error.message}`;
+                statusEl.textContent = 'FAILED';
+                statusEl.className = 'status error';
+                log(`✗ Consistency test failed: ${error.message}`);
+            }
+        }
+
+        async function runAllTests() {
+            log('=== Running all tests ===');
+            await testHealthCheck();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            await testModelInfo();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            await testPrediction();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            await testConsistency();
+            log('=== All tests completed ===');
+        }
+
+        log('Diagnostic tool ready. Click "Run All Tests" to start.');
+    </script>
+</body>
+</html>
