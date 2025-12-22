@@ -28,7 +28,7 @@
 }
 
 .regenerate-btn {
-  background: linear-gradient(135deg, #4a6741, #006b4d);
+  background: linear-gradient(135deg, #8b0000, #b22222);
   color: white;
   border: none;
   padding: 8px 16px;
@@ -43,9 +43,9 @@
 }
 
 .regenerate-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, #006b4d, #008f66);
+  background: linear-gradient(135deg, #b22222, #8b0000);
   transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0, 64, 48, 0.3);
+  box-shadow: 0 4px 8px rgba(139, 0, 0, 0.3);
 }
 
 .regenerate-btn:disabled {
@@ -72,7 +72,7 @@
 .model-chart-title {
   font-size: 1.2rem;
   font-weight: 700;
-  color: #4a6741;
+  color: #8b0000;
   margin: 0 0 0.5rem 0;
   font-family: "Milker", "Impact", "Arial Black", sans-serif;
   letter-spacing: 0.5px;

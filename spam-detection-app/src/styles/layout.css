@@ -14,7 +14,7 @@
 /* Page Titles */
 .page-title {
   font-size: 3.5rem;
-  color: #4a6741;
+  color: #8b0000;
   margin-bottom: 2rem;
   text-align: center;
   font-family: "Milker", "Impact", "Arial Black", sans-serif;
@@ -22,7 +22,7 @@
 
 /* Section Titles */
 .section-title {
-  color: #4a6741;
+  color: #8b0000;
   font-size: 1.5rem;
   font-weight: bold;
   margin-bottom: 1.5rem;
@@ -56,7 +56,7 @@
   background-color: #f9f9f9;
   padding: 2rem;
   border-radius: 8px;
-  border-left: 4px solid #4a6741;
+  border-left: 4px solid #8b0000;
   transition: transform 0.3s;
 }
 
@@ -66,7 +66,7 @@
 }
 
 .feature-card h3 {
-  color: #4a6741;
+  color: #8b0000;
   margin-bottom: 1rem;
   font-size: 1.7rem;
 }

@@ -213,7 +213,7 @@
 
 .main-result.ham .probability,
 .main-result.ham .result-text {
-  color: #28a745;
+  color: #8b0000;
 }
 
 /* Model Info Card */
@@ -225,7 +225,7 @@
 }
 
 .model-info h4 {
-  color: #4a6741;
+  color: #8b0000;
   font-size: 1.3rem;
   margin-bottom: 1rem;
   font-family: "Milker", "Impact", "Arial Black", sans-serif;
@@ -234,7 +234,7 @@
 .model-used {
   font-size: 1.5rem;
   font-weight: bold;
-  color: #4a6741;
+  color: #8b0000;
   margin-bottom: 0.5rem;
 }
 
@@ -253,7 +253,7 @@
 }
 
 .message-analysis h4 {
-  color: #4a6741;
+  color: #8b0000;
   font-size: 1.3rem;
   margin-bottom: 1rem;
   font-family: "Milker", "Impact", "Arial Black", sans-serif;
@@ -282,7 +282,7 @@
 
 .stat-value {
   font-weight: bold;
-  color: #4a6741;
+  color: #8b0000;
 }
 
 /* Empty Analysis Panel */
@@ -321,7 +321,7 @@
 .selected-model-title {
   font-size: 1.4rem;
   font-weight: 700;
-  color: #4a6741;
+  color: #8b0000;
   margin: 0 0 0.5rem 0;
   font-family: "Milker", "Impact", "Arial Black", sans-serif;
   letter-spacing: 0.5px;
@@ -380,7 +380,7 @@
 .charts-section-title {
   font-size: 1.4rem;
   font-weight: 700;
-  color: #4a6741;
+  color: #8b0000;
   margin: 0;
   font-family: "Milker", "Impact", "Arial Black", sans-serif;
   letter-spacing: 1px;
@@ -394,7 +394,7 @@
 
 .chart-description-header p {
   font-size: 1.1rem;
-  color: #4a6741;
+  color: #8b0000;
   margin: 0;
   font-weight: 500;
 }
@@ -408,7 +408,7 @@
 
 .chart-description-footer p {
   font-size: 1.1rem;
-  color: #4a6741;
+  color: #8b0000;
   margin: 0;
   font-weight: 500;
 }
@@ -451,7 +451,7 @@
 
 .model-checkbox input[type="checkbox"] {
   transform: scale(1.2);
-  accent-color: #4a6741;
+  accent-color: #8b0000;
 }
 
 .selected-models-info {

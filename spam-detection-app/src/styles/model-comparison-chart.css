@@ -46,7 +46,7 @@
 .model-chart-title.small {
     font-size: 0.95rem;
     font-weight: 700;
-    color: #4a6741;
+    color: #8b0000;
     margin: 0 0 2px 0;
     font-family: "Milker", "Impact", "Arial Black", sans-serif;
     letter-spacing: 0.5px;
@@ -167,7 +167,7 @@
   .model-summary-card:hover {
       transform: translateY(-2px);
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      border-color: #4a6741;
+      border-color: #8b0000;
   }
   
   .model-summary-header {
@@ -180,7 +180,7 @@
   .model-summary-name {
       font-size: 16px;
       font-weight: 700;
-      color: #4a6741;
+      color: #8b0000;
       margin: 0 0 4px 0;
       font-family: "Milker", "Impact", "Arial Black", sans-serif;
       letter-spacing: 0.5px;
@@ -544,7 +544,7 @@
       height: 40px;
       margin: -20px 0 0 -20px;
       border: 3px solid #f3f3f3;
-      border-top: 3px solid #4a6741;
+      border-top: 3px solid #8b0000;
       border-radius: 50%;
       animation: spin 1s linear infinite;
   }
