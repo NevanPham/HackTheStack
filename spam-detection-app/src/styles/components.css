@@ -2,11 +2,12 @@
 .navbar {
   display: flex;
   align-items: center;
-  justify-content: center; /* Center the content */
+  justify-content: center; /* Keep nav links centered */
   background-color: var(--navbar-bg);
   padding: 10px 20px;
   flex-wrap: wrap;
   width: 100%;
+  position: relative; /* allow absolute-positioned toggle inside */
 }
 
 /* Navigation links */

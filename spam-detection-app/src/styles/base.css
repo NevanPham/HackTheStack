@@ -85,10 +85,10 @@ body {
 
 /* Global dual-mode toggle */
 .mode-toggle {
-  position: fixed;
-  top: 18px;
+  position: absolute;
+  top: 50%;
   right: 16px;
-  z-index: 1000;
+  transform: translateY(-50%);
   padding: 4px 12px;
   border-radius: 999px;
   border: 1px solid var(--accent-color);
@@ -120,7 +120,7 @@ body {
 }
 
 .mode-toggle:hover {
-  transform: translateY(-1px);
+  transform: translateY(-50%) scale(1.05);
 }
 
 :root[data-mode="lab"] .mode-toggle {
