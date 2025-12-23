@@ -158,8 +158,21 @@ function FeatureDistributionChart() {
       });
 
       // axes
-      svg.append('g').attr('class', 'x-axis').attr('transform', `translate(0,${height})`).call(d3.axisBottom(x0)).selectAll('text').attr('font-size', '13px').attr('font-weight', '500');
-      svg.append('g').attr('class', 'y-axis').call(d3.axisLeft(y).ticks(8)).selectAll('text').attr('font-size', '12px');
+      svg.append('g')
+        .attr('class', 'x-axis')
+        .attr('transform', `translate(0,${height})`)
+        .call(d3.axisBottom(x0))
+        .selectAll('text')
+        .attr('font-size', '13px')
+        .attr('font-weight', '500')
+        .attr('fill', '#000');
+
+      svg.append('g')
+        .attr('class', 'y-axis')
+        .call(d3.axisLeft(y).ticks(8))
+        .selectAll('text')
+        .attr('font-size', '12px')
+        .attr('fill', '#000');
 
       svg.append('text').attr('x', width / 2).attr('y', height + 50).attr('text-anchor', 'middle').attr('font-size', '13px').attr('font-weight', 'bold').text('Statistics');
       svg.append('text').attr('transform', 'rotate(-90)').attr('x', -height / 2).attr('y', -50).attr('text-anchor', 'middle').attr('font-size', '13px').attr('font-weight', 'bold').text('Value');

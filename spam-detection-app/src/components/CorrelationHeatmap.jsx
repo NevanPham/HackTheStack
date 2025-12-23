@@ -121,6 +121,7 @@ function CorrelationHeatmap() {
         .call(d3.axisBottom(x).tickFormat(d => d.replace(/_/g, ' ')))
         .selectAll('text')
         .style('font-size', '11px')
+        .style('fill', '#000')
         .style('text-anchor', 'end')
         .attr('transform', 'rotate(-45)')
         .attr('dx', '-0.6em')
@@ -150,7 +151,12 @@ function CorrelationHeatmap() {
 
       const legendScale = d3.scaleLinear().domain([0, maxAbs]).range([0, legendWidth]);
       const legendAxis = d3.axisBottom(legendScale).ticks(5).tickFormat(d3.format('.2f'));
-      legend.append('g').attr('transform', `translate(0, ${legendHeight})`).call(legendAxis).selectAll('text').attr('font-size', '11px');
+      legend.append('g')
+        .attr('transform', `translate(0, ${legendHeight})`)
+        .call(legendAxis)
+        .selectAll('text')
+        .attr('font-size', '11px')
+        .attr('fill', '#000');
 
       legend.append('text').attr('x', legendWidth / 2).attr('y', -8).attr('text-anchor', 'middle').attr('font-size', '12px').attr('font-weight', '600').text('Absolute Correlation Strength');
     };

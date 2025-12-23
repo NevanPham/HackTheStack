@@ -132,14 +132,16 @@ function FeatureImportanceChart() {
       .attr('transform', `translate(0,${height})`)
       .call(xAxis)
       .selectAll('text')
-      .attr('font-size', '11px');
+      .attr('font-size', '11px')
+      .attr('fill', '#000');
 
     svg.append('g')
       .attr('class', 'y-axis')
       .call(yAxis)
       .selectAll('text')
       .attr('font-size', '11px')
-      .attr('font-weight', '500');
+      .attr('font-weight', '500')
+      .attr('fill', '#000');
 
     // Axis label adjusted
     svg.append('text')
