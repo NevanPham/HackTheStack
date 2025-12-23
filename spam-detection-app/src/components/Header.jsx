@@ -29,6 +29,16 @@ function Header({ currentPath, labMode, onToggleLabMode }) {
               SPAM DETECTOR
             </Link>
           </li>
+          {labMode && (
+            <li>
+              <Link
+                to="/vulnerabilities"
+                className={currentPath === '/vulnerabilities' ? 'active' : ''}
+              >
+                VULNERABILITIES
+              </Link>
+            </li>
+          )}
         </ul>
       </nav>
       <button

@@ -5,6 +5,7 @@ import Footer from './components/Footer'
 import Home from './pages/Home'
 import About from './pages/About'
 import SpamDetector from './pages/SpamDetector'
+import Vulnerabilities from './pages/Vulnerabilities'
 
 function AppContent({ labMode, onToggleLabMode }) {
   const location = useLocation();
@@ -21,6 +22,7 @@ function AppContent({ labMode, onToggleLabMode }) {
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
         <Route path="/spam-detector" element={<SpamDetector labMode={labMode} />} />
+        {labMode && <Route path="/vulnerabilities" element={<Vulnerabilities labMode={labMode} />} />}
         <Route path="*" element={<Home />} />
       </Routes>
       <Footer />
