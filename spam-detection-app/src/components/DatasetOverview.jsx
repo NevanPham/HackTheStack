@@ -211,8 +211,18 @@ function DatasetOverview() {
         .text(d => d.count.toLocaleString())
         .transition().delay(700).duration(400).attr('opacity', 1);
 
-      svg.append('g').attr('transform', `translate(0,${height})`).call(d3.axisBottom(x)).selectAll('text').attr('font-size', 12);
-      svg.append('g').call(d3.axisLeft(y).ticks(5)).selectAll('text').attr('font-size', 11);
+      svg.append('g')
+        .attr('transform', `translate(0,${height})`)
+        .call(d3.axisBottom(x))
+        .selectAll('text')
+        .attr('font-size', 12)
+        .attr('fill', '#000');
+
+      svg.append('g')
+        .call(d3.axisLeft(y).ticks(5))
+        .selectAll('text')
+        .attr('font-size', 11)
+        .attr('fill', '#000');
     };
 
     const drawAll = () => {
