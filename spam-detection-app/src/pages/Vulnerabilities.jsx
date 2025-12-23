@@ -22,19 +22,19 @@ function Vulnerabilities({ labMode }) {
           <p className="vuln-label">Vulnerability #1: Reflected XSS in Message Preview</p>
           <div className="vuln-grid">
             <div className="vuln-tile">
-              <h3>❌ What went wrong</h3>
+              <h3>😱 What went wrong</h3>
               <p>
                 In Lab Mode, the Spam Detector preview renders user input as HTML. Tags like {'<b>bold</b>'} are interpreted instead of shown literally, so untrusted content can inject markup.
               </p>
             </div>
             <div className="vuln-tile">
-              <h3>🔍 How it’s exploited</h3>
+              <h3>🤔 How it’s exploited</h3>
               <p>
                 When the page echoes your submission, the browser executes any provided HTML. Harmless formatting (e.g., {'<i>italic</i>'}) will style the preview; more dangerous payloads would also run in Lab Mode.
               </p>
             </div>
             <div className="vuln-tile">
-              <h3>✅ How it should be fixed</h3>
+              <h3>😁 How it should be fixed</h3>
               <p>
                 Render user input as text so the browser does not interpret tags. In Secure Mode, the preview escapes HTML, showing {'<b>bold</b>'} literally and preventing injected markup from rendering.
               </p>
