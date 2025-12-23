@@ -122,7 +122,7 @@
   width: 22px;
   height: 22px;
   background: #ffffff;
-  border: 2px solid #8b0000;
+  border: 2px solid var(--accent-color);
   border-radius: 50%;
   margin-top: -5px; /* align thumb center with 12px track */
   box-shadow: 0 1px 3px rgba(0,0,0,0.15);
@@ -143,7 +143,7 @@
   width: 22px;
   height: 22px;
   background: #ffffff;
-  border: 2px solid #8b0000;
+  border: 2px solid var(--accent-color);
   border-radius: 50%;
   box-shadow: 0 1px 3px rgba(0,0,0,0.15);
 }
@@ -170,7 +170,7 @@
   width: 22px;
   height: 22px;
   background: #ffffff;
-  border: 2px solid #8b0000;
+  border: 2px solid var(--accent-color);
   border-radius: 50%;
 }
 
@@ -310,7 +310,7 @@
   .cluster-summary-title {
     font-size: 1.1rem;
     font-weight: 700;
-    color: #8b0000;
+  color: var(--accent-color);
     margin: 0 0 16px 0;
     text-align: center;
     font-family: "Milker", "Impact", "Arial Black", sans-serif;
@@ -358,7 +358,7 @@
   .cluster-name {
     font-size: 14px;
     font-weight: 700;
-    color: #8b0000;
+    color: var(--accent-color);
     margin: 0;
     font-family: "Milker", "Impact", "Arial Black", sans-serif;
     letter-spacing: 0.5px;
@@ -618,7 +618,7 @@
     height: 40px;
     margin: -20px 0 0 -20px;
     border: 3px solid #f3f3f3;
-    border-top: 3px solid #8b0000;
+      border-top: 3px solid var(--accent-color);
     border-radius: 50%;
     animation: spin 1s linear infinite;
   }
@@ -635,8 +635,8 @@
   
   /* Cluster highlight effects */
   .cluster-summary-card.highlighted {
-    border-color: #8b0000;
-    background-color: #fbe9eb;
+    border-color: var(--accent-color);
+    background-color: var(--panel-bg);
     box-shadow: 0 4px 12px rgba(0, 64, 48, 0.1);
   }
   

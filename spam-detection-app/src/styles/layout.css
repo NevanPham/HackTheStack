@@ -14,7 +14,7 @@
 /* Page Titles */
 .page-title {
   font-size: 3.5rem;
-  color: #8b0000;
+  color: var(--accent-color);
   margin-bottom: 2rem;
   text-align: center;
   font-family: "Milker", "Impact", "Arial Black", sans-serif;
@@ -22,7 +22,7 @@
 
 /* Section Titles */
 .section-title {
-  color: #8b0000;
+  color: var(--accent-color);
   font-size: 1.5rem;
   font-weight: bold;
   margin-bottom: 1.5rem;
@@ -53,10 +53,10 @@
 
 /* Card Components */
 .feature-card {
-  background-color: #f9f9f9;
+  background-color: var(--panel-bg);
   padding: 2rem;
   border-radius: 8px;
-  border-left: 4px solid #8b0000;
+  border-left: 4px solid var(--accent-color);
   transition: transform 0.3s;
 }
 
@@ -66,22 +66,22 @@
 }
 
 .feature-card h3 {
-  color: #8b0000;
+  color: var(--accent-color);
   margin-bottom: 1rem;
   font-size: 1.7rem;
 }
 
 .feature-card p {
-  color: #666;
+  color: var(--muted-text-color);
   font-size: 1rem;
 }
 
 /* Analysis Panel */
 .analysis-panel {
-  background-color: white;
+  background-color: var(--panel-bg);
   padding: 2rem;
   border-radius: 12px;
-  border: 2px solid #ddd;
+  border: 2px solid var(--panel-border);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   animation: slideUp 0.4s ease-out;
 }
@@ -99,11 +99,11 @@
 
 /* Error Styling */
 .error {
-  background-color: #f8d7da;
-  color: #721c24;
+  background-color: var(--error-bg);
+  color: var(--error-text);
   padding: 1rem;
   border-radius: 8px;
-  border: 1px solid #f5c6cb;
+  border: 1px solid var(--error-border);
   text-align: center;
   margin-bottom: 1rem;
 }

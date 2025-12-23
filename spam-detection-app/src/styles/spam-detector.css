@@ -10,7 +10,7 @@
 
 .detector-title {
   font-size: 3.5rem;
-  color: #8b0000;
+  color: var(--accent-color);
   text-align: center;
   margin-bottom: 2rem;
   font-family: "Milker", "Impact", "Arial Black", sans-serif;
@@ -23,7 +23,7 @@
   pointer-events: none;
   background: rgba(0, 0, 0, 0.9);
   color: white;
-  border: 3px solid #8b0000;
+  border: 3px solid var(--accent-color);
   border-radius: 12px;
   padding: 8px 10px;
   font: 500 13px Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial;
@@ -124,22 +124,22 @@
 }
 
 .model-card:hover {
-  border-color: #8b0000;
-  background-color: #fbe9eb;
+  border-color: var(--accent-color);
+  background-color: var(--panel-bg);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 64, 48, 0.1);
 }
 
 .model-card.selected {
-  border-color: #8b0000;
-  background-color: #f8d7da;
-  box-shadow: 0 0 0 2px rgba(139, 0, 0, 0.2);
+  border-color: var(--accent-color);
+  background-color: var(--panel-bg);
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.08);
 }
 
 .model-name {
   font-weight: bold;
   font-size: 1.1rem;
-  color: #8b0000;
+  color: var(--accent-color);
   margin-bottom: 0.5rem;
 }
 
@@ -157,7 +157,7 @@
 
 .model-radio input[type="radio"] {
   transform: scale(1.2);
-  accent-color: #8b0000;
+  accent-color: var(--accent-color);
 }
 
 /* Analysis Section (Bottom Panel) */
@@ -213,7 +213,7 @@
 
 .main-result.ham .probability,
 .main-result.ham .result-text {
-  color: #8b0000;
+  color: var(--accent-color);
 }
 
 /* Model Info Card */
@@ -225,7 +225,7 @@
 }
 
 .model-info h4 {
-  color: #8b0000;
+  color: var(--accent-color);
   font-size: 1.3rem;
   margin-bottom: 1rem;
   font-family: "Milker", "Impact", "Arial Black", sans-serif;
@@ -234,7 +234,7 @@
 .model-used {
   font-size: 1.5rem;
   font-weight: bold;
-  color: #8b0000;
+  color: var(--accent-color);
   margin-bottom: 0.5rem;
 }
 
@@ -253,7 +253,7 @@
 }
 
 .message-analysis h4 {
-  color: #8b0000;
+  color: var(--accent-color);
   font-size: 1.3rem;
   margin-bottom: 1rem;
   font-family: "Milker", "Impact", "Arial Black", sans-serif;
@@ -282,7 +282,7 @@
 
 .stat-value {
   font-weight: bold;
-  color: #8b0000;
+  color: var(--accent-color);
 }
 
 /* Empty Analysis Panel */
@@ -321,7 +321,7 @@
 .selected-model-title {
   font-size: 1.4rem;
   font-weight: 700;
-  color: #8b0000;
+  color: var(--accent-color);
   margin: 0 0 0.5rem 0;
   font-family: "Milker", "Impact", "Arial Black", sans-serif;
   letter-spacing: 0.5px;
@@ -380,7 +380,7 @@
 .charts-section-title {
   font-size: 1.4rem;
   font-weight: 700;
-  color: #8b0000;
+  color: var(--accent-color);
   margin: 0;
   font-family: "Milker", "Impact", "Arial Black", sans-serif;
   letter-spacing: 1px;
@@ -394,7 +394,7 @@
 
 .chart-description-header p {
   font-size: 1.1rem;
-  color: #8b0000;
+  color: var(--accent-color);
   margin: 0;
   font-weight: 500;
 }
@@ -408,7 +408,7 @@
 
 .chart-description-footer p {
   font-size: 1.1rem;
-  color: #8b0000;
+  color: var(--accent-color);
   margin: 0;
   font-weight: 500;
 }

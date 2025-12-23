@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 
-function Header({ currentPath }) {
+function Header({ currentPath, labMode, onToggleLabMode }) {
   return (
     <header className="navbar">
       <nav>
@@ -31,6 +31,15 @@ function Header({ currentPath }) {
           </li>
         </ul>
       </nav>
+      <button
+        type="button"
+        className="mode-toggle"
+        onClick={onToggleLabMode}
+        aria-pressed={labMode}
+        aria-label={labMode ? 'Switch to secure mode' : 'Switch to lab mode'}
+      >
+        <span>{labMode ? 'LAB MODE' : 'SECURE'}</span>
+      </button>
     </header>
   );
 }

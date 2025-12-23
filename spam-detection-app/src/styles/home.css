@@ -27,7 +27,7 @@
 .hero-title {
   font-size: 5rem;
   font-weight: 900;
-  color: #8b0000;
+  color: var(--accent-color);
   line-height: 1;
   margin-bottom: 1rem;
   font-family: "Asset", "Impact", "Arial Black", sans-serif;
@@ -39,7 +39,7 @@
 
 .hero-subtitle {
   font-size: 2rem;
-  color: #8b0000;
+  color: var(--accent-color);
   margin-bottom: 2rem;
   letter-spacing: 3px;
   font-weight: 400;
