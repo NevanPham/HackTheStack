@@ -20,7 +20,7 @@ function AppContent({ labMode, onToggleLabMode }) {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
-        <Route path="/spam-detector" element={<SpamDetector />} />
+        <Route path="/spam-detector" element={<SpamDetector labMode={labMode} />} />
         <Route path="*" element={<Home />} />
       </Routes>
       <Footer />

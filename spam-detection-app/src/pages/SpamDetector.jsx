@@ -6,7 +6,7 @@ import '../styles/confidence-chart.css';
 import '../styles/model-comparison-chart.css';
 import '../styles/kmeans-cluster-chart.css';
 
-function SpamDetector() {
+function SpamDetector({ labMode = false }) {
   const [text, setText] = useState('');
   const [selectedModels, setSelectedModels] = useState(['xgboost']); // Changed to array
   const [result, setResult] = useState(null);
@@ -420,6 +420,27 @@ function SpamDetector() {
                 {result.isEmpty ? (
                   // Show confidence charts for selected models
                   <div className="multi-chart-analysis-panel">
+                    <div className="message-preview-card">
+                      <div className="message-preview-header">
+                        <h4>Message Preview</h4>
+                        <span className={`mode-pill ${labMode ? 'mode-pill--lab' : 'mode-pill--secure'}`}>
+                          {labMode ? 'Lab Mode: HTML renders (unsafe)' : 'Secure Mode: HTML escaped'}
+                        </span>
+                      </div>
+                      <div className="message-preview-body">
+                        {labMode ? (
+                          <div
+                            className="message-preview-content"
+                            dangerouslySetInnerHTML={{ __html: result.text || '' }}
+                          />
+                        ) : (
+                          <div className="message-preview-content message-preview-content--safe">
+                            {result.text || ''}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
                     {/* Charts section heading for Classification Models */}
                     {selectedModelsForConfidence.length > 0 && (
                       <>

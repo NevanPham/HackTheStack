@@ -473,6 +473,73 @@
   margin-bottom: 0;
 }
 
+.message-preview-card {
+  background-color: white;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.message-preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.message-preview-header h4 {
+  margin: 0;
+  color: var(--accent-color);
+  font-size: 1.1rem;
+  font-family: "Milker", "Impact", "Arial Black", sans-serif;
+}
+
+.message-preview-body {
+  border: 1px dashed #d6d6d6;
+  border-radius: 10px;
+  background: #fafafa;
+  padding: 1rem;
+}
+
+.message-preview-content {
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: #333;
+  font-size: 0.98rem;
+  line-height: 1.6;
+}
+
+.message-preview-content--safe {
+  font-family: "Courier New", monospace;
+}
+
+.mode-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.mode-pill--secure {
+  background: #e8f5e9;
+  color: #1b5e20;
+  border: 1px solid #c8e6c9;
+}
+
+.mode-pill--lab {
+  background: #fff3cd;
+  color: #8a6d3b;
+  border: 1px solid #ffeeba;
+}
+
 /* Responsive design for charts and layout */
 /* Laptop/Tablet Landscape (768px - 1199px) */
 @media (min-width: 768px) and (max-width: 1199px) {
