@@ -614,7 +614,12 @@ function SpamDetector({ labMode = false }) {
                         <div className="saved-analyses-detail">
                           {selectedAnalysis ? (
                             <div className="saved-analysis-detail-card">
-                              <h4>Saved Analysis Detail</h4>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                                <h4>Saved Analysis Detail</h4>
+                                <span className={`mode-pill ${labMode ? 'mode-pill--lab' : 'mode-pill--secure'}`}>
+                                  {labMode ? 'Lab Mode: HTML renders (unsafe)' : 'Secure Mode: HTML escaped'}
+                                </span>
+                              </div>
                               <div className="saved-analysis-detail-row">
                                 <span className="saved-analysis-detail-label">Saved At:</span>
                                 <span className="saved-analysis-detail-value">
@@ -631,9 +636,16 @@ function SpamDetector({ labMode = false }) {
                               </div>
                               <div className="saved-analysis-detail-row">
                                 <span className="saved-analysis-detail-label">Message Text:</span>
-                                <div className="saved-analysis-message-text">
-                                  {selectedAnalysis.message_text}
-                                </div>
+                                {labMode ? (
+                                  <div
+                                    className="saved-analysis-message-text"
+                                    dangerouslySetInnerHTML={{ __html: selectedAnalysis.message_text || '' }}
+                                  />
+                                ) : (
+                                  <div className="saved-analysis-message-text">
+                                    {selectedAnalysis.message_text}
+                                  </div>
+                                )}
                               </div>
                             </div>
                           ) : (
