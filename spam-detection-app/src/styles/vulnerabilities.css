@@ -43,9 +43,10 @@
 }
 
 .vuln-label {
+  font-size: 1.75rem;
   font-weight: 800;
   color: var(--accent-color);
-  margin: 0 0 0.4rem 0;
+  margin: 0 0 1rem 0;
 }
 
 .vuln-card h2 {
@@ -56,8 +57,14 @@
 
 .vuln-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(2, 1fr);
   gap: 1rem;
+}
+
+@media (max-width: 768px) {
+  .vuln-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .vuln-tile {
