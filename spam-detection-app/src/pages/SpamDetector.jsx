@@ -14,6 +14,10 @@ function SpamDetector({ labMode = false }) {
   const [error, setError] = useState(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [predictionData, setPredictionData] = useState(null); // Shared prediction data
+  const [savedAnalyses, setSavedAnalyses] = useState([]);
+  const [savedAnalysesLoading, setSavedAnalysesLoading] = useState(false);
+  const [savedAnalysesError, setSavedAnalysesError] = useState(null);
+  const [selectedAnalysis, setSelectedAnalysis] = useState(null);
   const analysisSectionRef = useRef(null);
   const [modelTooltip, setModelTooltip] = useState({ visible: false, text: '', x: 0, y: 0 });
   const [wordLimitError, setWordLimitError] = useState(false);
@@ -125,6 +129,29 @@ function SpamDetector({ labMode = false }) {
       behavior: 'smooth'
     });
   };
+
+  const fetchSavedAnalyses = async () => {
+    setSavedAnalysesLoading(true);
+    setSavedAnalysesError(null);
+    try {
+      const resp = await fetch('http://localhost:8000/analysis/list');
+      if (!resp.ok) {
+        throw new Error(`Failed to load saved analyses: ${resp.status}`);
+      }
+      const data = await resp.json();
+      setSavedAnalyses(data || []);
+    } catch (err) {
+      console.error('Error loading saved analyses:', err);
+      setSavedAnalysesError(err.message || 'Failed to load saved analyses.');
+    } finally {
+      setSavedAnalysesLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    // Load history on first mount
+    fetchSavedAnalyses();
+  }, []);
 
   // Note: Removed useEffect that was regenerating random predictions
   // The backend provides real, consistent predictions now
@@ -282,6 +309,40 @@ function SpamDetector({ labMode = false }) {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSaveAnalysis = async () => {
+    if (!result || !predictionData) return;
+
+    try {
+      const response = await fetch('http://localhost:8000/analysis/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message_text: text,
+          selected_models: selectedModels,
+          prediction_summary: {
+            predictions: predictionData,
+            text_stats: result.textStats || null,
+            total_processing_time_ms: result.totalProcessingTime || null
+          }
+        })
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Save analysis error:', errorText);
+        throw new Error(`Failed to save analysis: ${response.status}`);
+      }
+
+      const saved = await response.json();
+      // Optimistically refresh list and select the newly saved analysis
+      await fetchSavedAnalyses();
+      setSelectedAnalysis(saved);
+    } catch (err) {
+      console.error('Error saving analysis:', err);
+      alert(err.message || 'Failed to save analysis.');
     }
   };
 
@@ -494,7 +555,98 @@ function SpamDetector({ labMode = false }) {
                         />
                       </>
                     )}
-                    
+
+                    {/* Saved Analyses (History) - secure-only, plain text rendering */}
+                    <div className="saved-analyses-section">
+                      <div className="saved-analyses-header">
+                        <h3 className="charts-section-title">Saved Analyses</h3>
+                        <button
+                          className="btn btn-secondary"
+                          onClick={handleSaveAnalysis}
+                          disabled={!text.trim() || !predictionData}
+                        >
+                          Save Analysis
+                        </button>
+                      </div>
+                      <div className="saved-analyses-layout">
+                        <div className="saved-analyses-list">
+                          {savedAnalysesLoading && <p>Loading history...</p>}
+                          {savedAnalysesError && (
+                            <p style={{ color: '#e74c3c' }}>{savedAnalysesError}</p>
+                          )}
+                          {!savedAnalysesLoading && !savedAnalysesError && savedAnalyses.length === 0 && (
+                            <p style={{ fontSize: '14px', color: '#666' }}>No saved analyses yet.</p>
+                          )}
+                          <div className="saved-analyses-items">
+                            {savedAnalyses.map((item) => (
+                              <button
+                                key={item.id}
+                                type="button"
+                                className={`saved-analysis-item${
+                                  selectedAnalysis && selectedAnalysis.id === item.id ? ' saved-analysis-item--active' : ''
+                                }`}
+                                onClick={async () => {
+                                  try {
+                                    const resp = await fetch(`http://localhost:8000/analysis/${item.id}`);
+                                    if (!resp.ok) {
+                                      throw new Error(`Failed to load analysis ${item.id}`);
+                                    }
+                                    const detail = await resp.json();
+                                    setSelectedAnalysis(detail);
+                                  } catch (err) {
+                                    console.error('Error loading analysis detail:', err);
+                                    alert(err.message || 'Failed to load analysis details.');
+                                  }
+                                }}
+                              >
+                                <div className="saved-analysis-meta">
+                                  <span className="saved-analysis-timestamp">
+                                    {item.created_at}
+                                  </span>
+                                </div>
+                                <div className="saved-analysis-snippet">
+                                  {item.snippet}
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="saved-analyses-detail">
+                          {selectedAnalysis ? (
+                            <div className="saved-analysis-detail-card">
+                              <h4>Saved Analysis Detail</h4>
+                              <div className="saved-analysis-detail-row">
+                                <span className="saved-analysis-detail-label">Saved At:</span>
+                                <span className="saved-analysis-detail-value">
+                                  {selectedAnalysis.created_at}
+                                </span>
+                              </div>
+                              <div className="saved-analysis-detail-row">
+                                <span className="saved-analysis-detail-label">Models:</span>
+                                <span className="saved-analysis-detail-value">
+                                  {Array.isArray(selectedAnalysis.selected_models)
+                                    ? selectedAnalysis.selected_models.join(', ')
+                                    : ''}
+                                </span>
+                              </div>
+                              <div className="saved-analysis-detail-row">
+                                <span className="saved-analysis-detail-label">Message Text:</span>
+                                <div className="saved-analysis-message-text">
+                                  {selectedAnalysis.message_text}
+                                </div>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="saved-analysis-detail-placeholder">
+                              <p style={{ fontSize: '14px', color: '#666' }}>
+                                Select a saved analysis to view details.
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
                   </div>
                 ) : (
                   // Real results (when backend is connected)

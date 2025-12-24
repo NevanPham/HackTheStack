@@ -2,6 +2,7 @@ import sys
 from pathlib import Path
 import time
 import json
+import sqlite3
 
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -36,6 +37,36 @@ model_metadata = {}
 
 VALID_MODEL_IDS = ["xgboost", "lstm", "kmeans"]
 
+DB_PATH = project_root / "data" / "analyses.db"
+
+
+def _init_db() -> None:
+    """Initialize SQLite database for saved analyses."""
+    DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+    conn = sqlite3.connect(DB_PATH)
+    try:
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS saved_analyses (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                message_text TEXT NOT NULL,
+                selected_models TEXT NOT NULL,
+                prediction_summary TEXT,
+                created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            )
+            """
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def _get_db_connection() -> sqlite3.Connection:
+    """Return a new SQLite connection for the current request."""
+    conn = sqlite3.connect(DB_PATH, detect_types=sqlite3.PARSE_DECLTYPES)
+    conn.row_factory = sqlite3.Row
+    return conn
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -43,6 +74,13 @@ async def lifespan(app: FastAPI):
     global models, model_metadata
 
     print("Loading models...")
+
+    # Initialize database for saved analyses
+    try:
+        _init_db()
+        print("✓ Database initialized")
+    except Exception as e:
+        print(f"✗ Failed to initialize database: {e}")
 
     try:
         # Load LSTM model
@@ -143,6 +181,26 @@ class PredictionRequest(BaseModel):
 class BatchPredictionRequest(BaseModel):
     texts: List[str]
     models: List[str] = ["xgboost"]
+
+
+class SaveAnalysisRequest(BaseModel):
+    message_text: str
+    selected_models: List[str]
+    prediction_summary: Optional[Dict[str, Any]] = None
+
+
+class SavedAnalysisSummary(BaseModel):
+    id: int
+    created_at: str
+    snippet: str
+
+
+class SavedAnalysisDetail(BaseModel):
+    id: int
+    message_text: str
+    selected_models: List[str]
+    prediction_summary: Optional[Dict[str, Any]] = None
+    created_at: str
 
 
 class ModelPrediction(BaseModel):
@@ -437,6 +495,132 @@ async def predict_batch(request: BatchPredictionRequest):
         items=items,
         summary=summary,
         total_processing_time_ms=total_processing_time_ms,
+    )
+
+
+@app.post("/analysis/save", response_model=SavedAnalysisDetail)
+async def save_analysis(request: SaveAnalysisRequest):
+    """Persist a completed analysis to SQLite."""
+    message_text = request.message_text
+    if not message_text or not message_text.strip():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Message text cannot be empty",
+        )
+
+    # Validate and normalize selected models using existing rules
+    model_ids = _validate_model_ids(request.selected_models)
+
+    # Store selected models and prediction summary as JSON strings
+    selected_models_json = json.dumps(model_ids)
+    prediction_summary_json = (
+        json.dumps(request.prediction_summary) if request.prediction_summary is not None else None
+    )
+
+    conn = _get_db_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            INSERT INTO saved_analyses (message_text, selected_models, prediction_summary)
+            VALUES (?, ?, ?)
+            """,
+            (message_text, selected_models_json, prediction_summary_json),
+        )
+        conn.commit()
+        analysis_id = cursor.lastrowid
+
+        # Fetch the full row including created_at
+        cursor.execute(
+            "SELECT id, message_text, selected_models, prediction_summary, created_at "
+            "FROM saved_analyses WHERE id = ?",
+            (analysis_id,),
+        )
+        row = cursor.fetchone()
+    finally:
+        conn.close()
+
+    if row is None:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to save analysis",
+        )
+
+    return SavedAnalysisDetail(
+        id=row["id"],
+        message_text=row["message_text"],
+        selected_models=json.loads(row["selected_models"]),
+        prediction_summary=json.loads(row["prediction_summary"])
+        if row["prediction_summary"] is not None
+        else None,
+        created_at=str(row["created_at"]),
+    )
+
+
+@app.get("/analysis/list", response_model=List[SavedAnalysisSummary])
+async def list_analyses():
+    """Return a list of saved analyses with minimal fields for history view."""
+    conn = _get_db_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            SELECT id, message_text, created_at
+            FROM saved_analyses
+            ORDER BY datetime(created_at) DESC, id DESC
+            """
+        )
+        rows = cursor.fetchall()
+    finally:
+        conn.close()
+
+    summaries: List[SavedAnalysisSummary] = []
+    for row in rows:
+        message_text = row["message_text"] or ""
+        snippet = message_text[:50]
+        summaries.append(
+            SavedAnalysisSummary(
+                id=row["id"],
+                created_at=str(row["created_at"]),
+                snippet=snippet,
+            )
+        )
+
+    return summaries
+
+
+@app.get("/analysis/{analysis_id}", response_model=SavedAnalysisDetail)
+async def get_analysis(analysis_id: int):
+    """Return full details for a single saved analysis."""
+    conn = _get_db_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            SELECT id, message_text, selected_models, prediction_summary, created_at
+            FROM saved_analyses
+            WHERE id = ?
+            """,
+            (analysis_id,),
+        )
+        row = cursor.fetchone()
+    finally:
+        conn.close()
+
+    if row is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Analysis with id {analysis_id} not found",
+        )
+
+    return SavedAnalysisDetail(
+        id=row["id"],
+        message_text=row["message_text"],
+        selected_models=json.loads(row["selected_models"]),
+        prediction_summary=json.loads(row["prediction_summary"])
+        if row["prediction_summary"] is not None
+        else None,
+        created_at=str(row["created_at"]),
     )
 
 
