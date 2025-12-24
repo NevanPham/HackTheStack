@@ -557,11 +557,11 @@ function SpamDetector({ labMode = false }) {
                     )}
 
                     {/* Saved Analyses (History) - secure-only, plain text rendering */}
-                    <div className="saved-analyses-section">
+                    <div className={`saved-analyses-section ${labMode ? 'saved-analyses-section--lab' : 'saved-analyses-section--secure'}`}>
                       <div className="saved-analyses-header">
                         <h3 className="charts-section-title">Saved Analyses</h3>
                         <button
-                          className="btn btn-secondary"
+                          className={`btn ${labMode ? 'btn-lab' : 'btn-secure'}`}
                           onClick={handleSaveAnalysis}
                           disabled={!text.trim() || !predictionData}
                         >
