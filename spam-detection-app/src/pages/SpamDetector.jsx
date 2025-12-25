@@ -162,7 +162,8 @@ function SpamDetector({ labMode = false }) {
       const userId = getUserId();
       const resp = await fetch('http://localhost:8000/analysis/list', {
         headers: {
-          'X-User-Id': userId
+          'X-User-Id': userId,
+          'X-Lab-Mode': labMode ? 'true' : 'false'
         }
       });
       if (!resp.ok) {
@@ -257,6 +258,7 @@ function SpamDetector({ labMode = false }) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'X-Lab-Mode': labMode ? 'true' : 'false'
         },
         body: JSON.stringify({
           text: text,
@@ -351,7 +353,8 @@ function SpamDetector({ labMode = false }) {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'X-User-Id': userId
+          'X-User-Id': userId,
+          'X-Lab-Mode': labMode ? 'true' : 'false'
         },
         body: JSON.stringify({
           message_text: text,
@@ -633,7 +636,8 @@ function SpamDetector({ labMode = false }) {
                                     const userId = getUserId();
                                     const resp = await fetch(`http://localhost:8000/analysis/${item.id}`, {
                                       headers: {
-                                        'X-User-Id': userId
+                                        'X-User-Id': userId,
+                                        'X-Lab-Mode': labMode ? 'true' : 'false'
                                       }
                                     });
                                     if (!resp.ok) {
@@ -654,6 +658,19 @@ function SpamDetector({ labMode = false }) {
                                   <span className="saved-analysis-timestamp">
                                     {item.created_at}
                                   </span>
+                                  {labMode && item.user_id && (
+                                    <span 
+                                      style={{ 
+                                        fontSize: '11px', 
+                                        color: item.user_id === getUserId() ? '#27ae60' : '#e74c3c',
+                                        marginLeft: '8px',
+                                        fontWeight: item.user_id !== getUserId() ? 'bold' : 'normal'
+                                      }}
+                                      title={item.user_id === getUserId() ? 'Your analysis' : 'Another user\'s analysis (IDOR vulnerability)'}
+                                    >
+                                      {item.user_id === getUserId() ? '✓ Yours' : `⚠ Other User: ${item.user_id.substring(0, 12)}...`}
+                                    </span>
+                                  )}
                                 </div>
                                 <div className="saved-analysis-snippet">
                                   {item.snippet}
@@ -671,12 +688,36 @@ function SpamDetector({ labMode = false }) {
                                   {labMode ? 'Lab Mode: HTML renders (unsafe)' : 'Secure Mode: HTML escaped'}
                                 </span>
                               </div>
+                              {labMode && selectedAnalysis.user_id && selectedAnalysis.user_id !== getUserId() && (
+                                <div className="saved-analysis-detail-row" style={{ 
+                                  backgroundColor: '#fff3cd', 
+                                  padding: '8px', 
+                                  borderRadius: '4px', 
+                                  marginBottom: '0.75rem',
+                                  border: '1px solid #ffc107'
+                                }}>
+                                  <span style={{ color: '#856404', fontWeight: 'bold' }}>
+                                    ⚠️ IDOR Vulnerability: This analysis belongs to another user (User ID: {selectedAnalysis.user_id})
+                                  </span>
+                                </div>
+                              )}
                               <div className="saved-analysis-detail-row">
                                 <span className="saved-analysis-detail-label">Saved At:</span>
                                 <span className="saved-analysis-detail-value">
                                   {selectedAnalysis.created_at}
                                 </span>
                               </div>
+                              {labMode && selectedAnalysis.user_id && (
+                                <div className="saved-analysis-detail-row">
+                                  <span className="saved-analysis-detail-label">Owner User ID:</span>
+                                  <span className="saved-analysis-detail-value" style={{
+                                    color: selectedAnalysis.user_id === getUserId() ? '#27ae60' : '#e74c3c',
+                                    fontWeight: selectedAnalysis.user_id !== getUserId() ? 'bold' : 'normal'
+                                  }}>
+                                    {selectedAnalysis.user_id} {selectedAnalysis.user_id === getUserId() ? '(You)' : '(Another User)'}
+                                  </span>
+                                </div>
+                              )}
                               <div className="saved-analysis-detail-row">
                                 <span className="saved-analysis-detail-label">Models:</span>
                                 <span className="saved-analysis-detail-value">

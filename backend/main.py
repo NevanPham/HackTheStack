@@ -3,6 +3,7 @@ from pathlib import Path
 import time
 import json
 import sqlite3
+import os
 
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -38,6 +39,11 @@ model_metadata = {}
 VALID_MODEL_IDS = ["xgboost", "lstm", "kmeans"]
 
 DB_PATH = project_root / "data" / "analyses.db"
+
+# Lab Mode configuration (server-side master switch)
+# If set to false, Lab Mode is disabled regardless of client header (safety override)
+# If set to true (default), Lab Mode is controlled by X-Lab-Mode header from frontend
+LAB_MODE_ENABLED = os.getenv("LAB_MODE_ENABLED", "true").lower() in ("true", "1", "yes")
 
 
 def _init_db() -> None:
@@ -153,6 +159,14 @@ async def lifespan(app: FastAPI):
     print(
         f"Loaded {sum(1 for m in models.values() if m is not None)}/3 models successfully"
     )
+    
+    # Log Lab Mode configuration
+    if LAB_MODE_ENABLED:
+        print("⚠️  LAB MODE ALLOWED - IDOR vulnerability can be toggled via frontend")
+        logger.info("Lab Mode is allowed - Frontend can toggle IDOR vulnerability via X-Lab-Mode header")
+    else:
+        print("✓ Secure Mode Only - Lab Mode disabled (set LAB_MODE_ENABLED=true to enable)")
+        logger.info("Secure Mode Only - Lab Mode disabled by environment variable")
 
     yield
 
@@ -202,6 +216,7 @@ class SavedAnalysisSummary(BaseModel):
     id: int
     created_at: str
     snippet: str
+    user_id: Optional[str] = None  # Only included in Lab Mode to show ownership
 
 
 class SavedAnalysisDetail(BaseModel):
@@ -210,6 +225,7 @@ class SavedAnalysisDetail(BaseModel):
     selected_models: List[str]
     prediction_summary: Optional[Dict[str, Any]] = None
     created_at: str
+    user_id: Optional[str] = None  # Only included in Lab Mode to show ownership
 
 
 class ModelPrediction(BaseModel):
@@ -510,7 +526,8 @@ async def predict_batch(request: BatchPredictionRequest):
 @app.post("/analysis/save", response_model=SavedAnalysisDetail)
 async def save_analysis(
     request: SaveAnalysisRequest,
-    x_user_id: Optional[str] = Header(None, alias="X-User-Id")
+    x_user_id: Optional[str] = Header(None, alias="X-User-Id"),
+    x_lab_mode: Optional[str] = Header(None, alias="X-Lab-Mode")
 ):
     """Persist a completed analysis to SQLite."""
     # Require user_id header
@@ -551,7 +568,7 @@ async def save_analysis(
 
         # Fetch the full row including created_at
         cursor.execute(
-            "SELECT id, message_text, selected_models, prediction_summary, created_at "
+            "SELECT id, message_text, selected_models, prediction_summary, created_at, user_id "
             "FROM saved_analyses WHERE id = ?",
             (analysis_id,),
         )
@@ -565,6 +582,12 @@ async def save_analysis(
             detail="Failed to save analysis",
         )
 
+    # Check if Lab Mode is enabled (env var must allow it AND header must request it)
+    is_lab_mode = LAB_MODE_ENABLED and x_lab_mode and x_lab_mode.lower() in ("true", "1", "yes")
+    
+    # Include user_id in Lab Mode to make IDOR vulnerability visible
+    user_id = row["user_id"] if is_lab_mode else None
+
     return SavedAnalysisDetail(
         id=row["id"],
         message_text=row["message_text"],
@@ -573,12 +596,14 @@ async def save_analysis(
         if row["prediction_summary"] is not None
         else None,
         created_at=str(row["created_at"]),
+        user_id=user_id,
     )
 
 
 @app.get("/analysis/list", response_model=List[SavedAnalysisSummary])
 async def list_analyses(
-    x_user_id: Optional[str] = Header(None, alias="X-User-Id")
+    x_user_id: Optional[str] = Header(None, alias="X-User-Id"),
+    x_lab_mode: Optional[str] = Header(None, alias="X-Lab-Mode")
 ):
     """Return a list of saved analyses with minimal fields for history view."""
     # Require user_id header
@@ -588,18 +613,32 @@ async def list_analyses(
             detail="X-User-Id header is required",
         )
     
+    # Check if Lab Mode is enabled (env var must allow it AND header must request it)
+    is_lab_mode = LAB_MODE_ENABLED and x_lab_mode and x_lab_mode.lower() in ("true", "1", "yes")
+    
     conn = _get_db_connection()
     try:
         cursor = conn.cursor()
-        cursor.execute(
-            """
-            SELECT id, message_text, created_at
-            FROM saved_analyses
-            WHERE user_id = ?
-            ORDER BY datetime(created_at) DESC, id DESC
-            """,
-            (x_user_id,),
-        )
+        # In Lab Mode: show all analyses (IDOR vulnerability)
+        # In Secure Mode: only show analyses owned by the user
+        if is_lab_mode:
+            cursor.execute(
+                """
+                SELECT id, message_text, created_at, user_id
+                FROM saved_analyses
+                ORDER BY datetime(created_at) DESC, id DESC
+                """
+            )
+        else:
+            cursor.execute(
+                """
+                SELECT id, message_text, created_at
+                FROM saved_analyses
+                WHERE user_id = ?
+                ORDER BY datetime(created_at) DESC, id DESC
+                """,
+                (x_user_id,),
+            )
         rows = cursor.fetchall()
     finally:
         conn.close()
@@ -608,11 +647,14 @@ async def list_analyses(
     for row in rows:
         message_text = row["message_text"] or ""
         snippet = message_text[:50]
+        # Include user_id in Lab Mode to make IDOR vulnerability visible
+        user_id = row["user_id"] if "user_id" in row.keys() and LAB_MODE_ENABLED else None
         summaries.append(
             SavedAnalysisSummary(
                 id=row["id"],
                 created_at=str(row["created_at"]),
                 snippet=snippet,
+                user_id=user_id,
             )
         )
 
@@ -622,7 +664,8 @@ async def list_analyses(
 @app.get("/analysis/{analysis_id}", response_model=SavedAnalysisDetail)
 async def get_analysis(
     analysis_id: int,
-    x_user_id: Optional[str] = Header(None, alias="X-User-Id")
+    x_user_id: Optional[str] = Header(None, alias="X-User-Id"),
+    x_lab_mode: Optional[str] = Header(None, alias="X-Lab-Mode")
 ):
     """Return full details for a single saved analysis."""
     # Require user_id header
@@ -631,6 +674,9 @@ async def get_analysis(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="X-User-Id header is required",
         )
+    
+    # Check if Lab Mode is enabled (env var must allow it AND header must request it)
+    is_lab_mode = LAB_MODE_ENABLED and x_lab_mode and x_lab_mode.lower() in ("true", "1", "yes")
     
     conn = _get_db_connection()
     try:
@@ -653,13 +699,17 @@ async def get_analysis(
             detail=f"Analysis with id {analysis_id} not found",
         )
     
-    # Enforce ownership: return 403 if analysis belongs to another user
-    if row["user_id"] != x_user_id:
+    # IDOR Vulnerability: In Lab Mode, bypass ownership check
+    # Secure Mode: Enforce ownership - return 403 if analysis belongs to another user
+    if not is_lab_mode and row["user_id"] != x_user_id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=f"Access denied to analysis {analysis_id}",
         )
 
+    # Include user_id in Lab Mode to make IDOR vulnerability visible
+    user_id = row["user_id"] if is_lab_mode else None
+    
     return SavedAnalysisDetail(
         id=row["id"],
         message_text=row["message_text"],
@@ -668,6 +718,7 @@ async def get_analysis(
         if row["prediction_summary"] is not None
         else None,
         created_at=str(row["created_at"]),
+        user_id=user_id,
     )
 
 
