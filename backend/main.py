@@ -12,7 +12,7 @@ import logging
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException, status, Header
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from pydantic import BaseModel
@@ -57,6 +57,15 @@ def _init_db() -> None:
             """
         )
         conn.commit()
+        
+        # Migration: Add user_id column if it doesn't exist
+        cursor = conn.cursor()
+        cursor.execute("PRAGMA table_info(saved_analyses)")
+        columns = [row[1] for row in cursor.fetchall()]
+        if 'user_id' not in columns:
+            conn.execute("ALTER TABLE saved_analyses ADD COLUMN user_id TEXT")
+            conn.commit()
+            logger.info("Added user_id column to saved_analyses table")
     finally:
         conn.close()
 
@@ -499,8 +508,18 @@ async def predict_batch(request: BatchPredictionRequest):
 
 
 @app.post("/analysis/save", response_model=SavedAnalysisDetail)
-async def save_analysis(request: SaveAnalysisRequest):
+async def save_analysis(
+    request: SaveAnalysisRequest,
+    x_user_id: Optional[str] = Header(None, alias="X-User-Id")
+):
     """Persist a completed analysis to SQLite."""
+    # Require user_id header
+    if not x_user_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="X-User-Id header is required",
+        )
+    
     message_text = request.message_text
     if not message_text or not message_text.strip():
         raise HTTPException(
@@ -522,10 +541,10 @@ async def save_analysis(request: SaveAnalysisRequest):
         cursor = conn.cursor()
         cursor.execute(
             """
-            INSERT INTO saved_analyses (message_text, selected_models, prediction_summary)
-            VALUES (?, ?, ?)
+            INSERT INTO saved_analyses (message_text, selected_models, prediction_summary, user_id)
+            VALUES (?, ?, ?, ?)
             """,
-            (message_text, selected_models_json, prediction_summary_json),
+            (message_text, selected_models_json, prediction_summary_json, x_user_id),
         )
         conn.commit()
         analysis_id = cursor.lastrowid
@@ -558,8 +577,17 @@ async def save_analysis(request: SaveAnalysisRequest):
 
 
 @app.get("/analysis/list", response_model=List[SavedAnalysisSummary])
-async def list_analyses():
+async def list_analyses(
+    x_user_id: Optional[str] = Header(None, alias="X-User-Id")
+):
     """Return a list of saved analyses with minimal fields for history view."""
+    # Require user_id header
+    if not x_user_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="X-User-Id header is required",
+        )
+    
     conn = _get_db_connection()
     try:
         cursor = conn.cursor()
@@ -567,8 +595,10 @@ async def list_analyses():
             """
             SELECT id, message_text, created_at
             FROM saved_analyses
+            WHERE user_id = ?
             ORDER BY datetime(created_at) DESC, id DESC
-            """
+            """,
+            (x_user_id,),
         )
         rows = cursor.fetchall()
     finally:
@@ -590,14 +620,24 @@ async def list_analyses():
 
 
 @app.get("/analysis/{analysis_id}", response_model=SavedAnalysisDetail)
-async def get_analysis(analysis_id: int):
+async def get_analysis(
+    analysis_id: int,
+    x_user_id: Optional[str] = Header(None, alias="X-User-Id")
+):
     """Return full details for a single saved analysis."""
+    # Require user_id header
+    if not x_user_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="X-User-Id header is required",
+        )
+    
     conn = _get_db_connection()
     try:
         cursor = conn.cursor()
         cursor.execute(
             """
-            SELECT id, message_text, selected_models, prediction_summary, created_at
+            SELECT id, message_text, selected_models, prediction_summary, created_at, user_id
             FROM saved_analyses
             WHERE id = ?
             """,
@@ -611,6 +651,13 @@ async def get_analysis(analysis_id: int):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Analysis with id {analysis_id} not found",
+        )
+    
+    # Enforce ownership: return 403 if analysis belongs to another user
+    if row["user_id"] != x_user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Access denied to analysis {analysis_id}",
         )
 
     return SavedAnalysisDetail(

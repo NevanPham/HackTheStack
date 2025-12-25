@@ -22,6 +22,31 @@ function SpamDetector({ labMode = false }) {
   const [modelTooltip, setModelTooltip] = useState({ visible: false, text: '', x: 0, y: 0 });
   const [wordLimitError, setWordLimitError] = useState(false);
 
+  // Generate or retrieve user_id from localStorage
+  const getUserId = () => {
+    const STORAGE_KEY = 'hts_user_id';
+    let userId = localStorage.getItem(STORAGE_KEY);
+    if (!userId) {
+      // Generate a random user_id (UUID-like format for simplicity)
+      userId = 'user_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+      localStorage.setItem(STORAGE_KEY, userId);
+    }
+    return userId;
+  };
+
+  // Clear localStorage to get a new user_id (for testing ownership)
+  const handleClearUserId = () => {
+    if (window.confirm('Clear localStorage and generate a new user ID? This will switch you to a different user account for testing ownership.')) {
+      localStorage.removeItem('hts_user_id');
+      // Clear current saved analyses and selected analysis
+      setSavedAnalyses([]);
+      setSelectedAnalysis(null);
+      // Refresh the list with the new user_id
+      fetchSavedAnalyses();
+      alert('New user ID generated! You are now a different user.');
+    }
+  };
+
   const models = [
     { 
       id: 'lstm', 
@@ -134,7 +159,12 @@ function SpamDetector({ labMode = false }) {
     setSavedAnalysesLoading(true);
     setSavedAnalysesError(null);
     try {
-      const resp = await fetch('http://localhost:8000/analysis/list');
+      const userId = getUserId();
+      const resp = await fetch('http://localhost:8000/analysis/list', {
+        headers: {
+          'X-User-Id': userId
+        }
+      });
       if (!resp.ok) {
         throw new Error(`Failed to load saved analyses: ${resp.status}`);
       }
@@ -316,9 +346,13 @@ function SpamDetector({ labMode = false }) {
     if (!result || !predictionData) return;
 
     try {
+      const userId = getUserId();
       const response = await fetch('http://localhost:8000/analysis/save', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-User-Id': userId
+        },
         body: JSON.stringify({
           message_text: text,
           selected_models: selectedModels,
@@ -560,13 +594,22 @@ function SpamDetector({ labMode = false }) {
                     <div className={`saved-analyses-section ${labMode ? 'saved-analyses-section--lab' : 'saved-analyses-section--secure'}`}>
                       <div className="saved-analyses-header">
                         <h3 className="charts-section-title">Saved Analyses</h3>
-                        <button
-                          className={`btn ${labMode ? 'btn-lab' : 'btn-secure'}`}
-                          onClick={handleSaveAnalysis}
-                          disabled={!text.trim() || !predictionData}
-                        >
-                          Save Analysis
-                        </button>
+                        <div style={{ display: 'flex', gap: '10px' }}>
+                          <button
+                            className={`btn ${labMode ? 'btn-lab' : 'btn-secure'}`}
+                            onClick={handleSaveAnalysis}
+                            disabled={!text.trim() || !predictionData}
+                          >
+                            Save Analysis
+                          </button>
+                          <button
+                            className="btn btn-secondary"
+                            onClick={handleClearUserId}
+                            title="Clear localStorage to generate a new user ID (for testing ownership)"
+                          >
+                            Clear User ID
+                          </button>
+                        </div>
                       </div>
                       <div className="saved-analyses-layout">
                         <div className="saved-analyses-list">
@@ -587,8 +630,16 @@ function SpamDetector({ labMode = false }) {
                                 }`}
                                 onClick={async () => {
                                   try {
-                                    const resp = await fetch(`http://localhost:8000/analysis/${item.id}`);
+                                    const userId = getUserId();
+                                    const resp = await fetch(`http://localhost:8000/analysis/${item.id}`, {
+                                      headers: {
+                                        'X-User-Id': userId
+                                      }
+                                    });
                                     if (!resp.ok) {
+                                      if (resp.status === 403 || resp.status === 404) {
+                                        throw new Error('Analysis not found or access denied');
+                                      }
                                       throw new Error(`Failed to load analysis ${item.id}`);
                                     }
                                     const detail = await resp.json();
