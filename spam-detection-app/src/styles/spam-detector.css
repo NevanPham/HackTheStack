@@ -143,6 +143,16 @@
   margin-bottom: 0.5rem;
 }
 
+/* Ensure model names are green in Secure Mode */
+:root:not([data-mode="lab"]) .model-name {
+  color: #16a34a; /* green for Secure Mode */
+}
+
+/* Model names are red in Lab Mode (via --accent-color variable) */
+:root[data-mode="lab"] .model-name {
+  color: var(--accent-color); /* red in Lab Mode */
+}
+
 .model-description {
   font-size: 0.9rem;
   color: #666;

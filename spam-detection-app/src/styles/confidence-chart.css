@@ -78,6 +78,16 @@
   letter-spacing: 0.5px;
 }
 
+/* Model chart titles are green in Secure Mode */
+:root:not([data-mode="lab"]) .model-chart-title {
+  color: #16a34a; /* green for Secure Mode */
+}
+
+/* Model chart titles are red in Lab Mode */
+:root[data-mode="lab"] .model-chart-title {
+  color: #8b0000; /* red for Lab Mode */
+}
+
 .model-chart-description {
   font-size: 0.9rem;
   color: #666;
