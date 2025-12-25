@@ -38,7 +38,7 @@ model_metadata = {}
 
 VALID_MODEL_IDS = ["xgboost", "lstm", "kmeans"]
 
-DB_PATH = project_root / "data" / "analyses.db"
+DB_PATH = project_root / "backend" / "db" / "analyses.db"
 
 # Lab Mode configuration (server-side master switch)
 # If set to false, Lab Mode is disabled regardless of client header (safety override)
