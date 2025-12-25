@@ -94,6 +94,45 @@ function Vulnerabilities({ labMode }) {
           </div>
         </div>
       </section>
+
+      <section className="vuln-section">
+        <div className="vuln-card">
+          <p className="vuln-label">Vulnerability #3: IDOR in Saved Analyses Access</p>
+          <div className="vuln-grid">
+            <div className="vuln-tile">
+              <h3>❌ What went wrong</h3>
+              <p>
+                In Lab Mode, the API doesn't verify ownership when accessing saved analyses. The list endpoint returns all analyses regardless of owner, and the detail endpoint allows access to any analysis by ID without checking if it belongs to the requesting user.
+              </p>
+            </div>
+            <div className="vuln-tile">
+              <h3>🔍 How it's exploited</h3>
+              <p>
+                An attacker can view analyses belonging to other users by either enumerating analysis IDs in the detail endpoint or by seeing all analyses in the list. The API trusts the client-provided analysis ID without verifying ownership, breaking the access control boundary between users.
+              </p>
+            </div>
+            <div className="vuln-tile">
+              <h3>⚠️ Realistic attack scenario</h3>
+              <p>
+                An attacker saves their own analysis, notes the returned ID (e.g., 5), then modifies the request to access ID 4 or 6. In Lab Mode, they can view other users' saved messages and prediction data. This exposes sensitive information that should be private to each user, potentially revealing personal messages or business communications.
+              </p>
+            </div>
+            <div className="vuln-tile">
+              <h3>✅ How it should be fixed</h3>
+              <p>
+                Always verify ownership before returning analysis details. In Secure Mode, the list endpoint filters by user_id, and the detail endpoint returns 403 Forbidden if the analysis belongs to another user. Access control must be enforced server-side; client-provided identifiers cannot be trusted.
+              </p>
+            </div>
+          </div>
+
+          <div className="try-it-card">
+            <h3>Try it</h3>
+            <p>
+              Go to the <Link to="/spam-detector">Spam Detector</Link> in Lab Mode, save an analysis, then use the "Clear User ID" button to switch to a different user account. Notice that you can still see and access analyses from the previous user. In Secure Mode, switching users hides other users' analyses and blocks access to their details.
+            </p>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
