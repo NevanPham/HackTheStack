@@ -34,9 +34,9 @@ function Login({ onLogin }) {
       localStorage.setItem('auth_token', data.access_token);
       localStorage.setItem('username', data.username);
       
-      // Call parent callback
+      // Call parent callback with CSRF token if available
       if (onLogin) {
-        onLogin(data.username, data.access_token);
+        onLogin(data.username, data.access_token, data.csrf_token);
       }
       
       // Redirect to home

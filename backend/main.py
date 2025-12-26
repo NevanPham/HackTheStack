@@ -58,6 +58,10 @@ ACCESS_TOKEN_EXPIRE_HOURS = 24
 # Security scheme for JWT tokens
 security = HTTPBearer()
 
+# CSRF token storage: in-memory dict mapping username -> csrf_token
+# In production, consider using Redis or database-backed storage
+csrf_tokens: Dict[str, str] = {}
+
 
 def _init_db() -> None:
     """Initialize SQLite database for saved analyses and users."""
@@ -268,11 +272,17 @@ class LoginResponse(BaseModel):
     access_token: str
     token_type: str
     username: str
+    csrf_token: str
 
 
 class SessionResponse(BaseModel):
     username: str
     authenticated: bool
+    csrf_token: Optional[str] = None
+
+
+class CSRFResponse(BaseModel):
+    csrf_token: str
 
 
 class SavedAnalysisSummary(BaseModel):
@@ -380,6 +390,74 @@ def verify_token(token: str) -> Optional[Dict[str, Any]]:
         return None
 
 
+def generate_csrf_token() -> str:
+    """Generate a secure CSRF token."""
+    return token_urlsafe(32)
+
+
+def get_csrf_token_for_user(username: str) -> str:
+    """Get or generate a CSRF token for a user."""
+    if username not in csrf_tokens:
+        csrf_tokens[username] = generate_csrf_token()
+    return csrf_tokens[username]
+
+
+def validate_csrf_token(username: str, token: Optional[str]) -> bool:
+    """Validate a CSRF token for a user."""
+    logger.info(f"CSRF Debug: validate_csrf_token called for user '{username}', token provided: {bool(token)}")
+    if not token:
+        logger.warning(f"CSRF Debug: No token provided for user '{username}'")
+        return False
+    stored_token = csrf_tokens.get(username)
+    if not stored_token:
+        logger.warning(f"CSRF Debug: No stored CSRF token found for user '{username}'. Available users: {list(csrf_tokens.keys())}")
+        return False
+    tokens_match = stored_token == token
+    logger.info(f"CSRF Debug: Token validation result: {tokens_match} (stored: {stored_token[:10]}..., provided: {token[:10]}...)")
+    return tokens_match
+
+
+def require_csrf_token(
+    username: str,
+    csrf_token: Optional[str],
+    x_lab_mode: Optional[str],
+    method: str
+) -> None:
+    """
+    Validate CSRF token for state-changing requests in Secure Mode.
+    
+    Vulnerability #4 (CSRF): In Lab Mode, CSRF protection is intentionally bypassed,
+    allowing state-changing requests without CSRF token validation. This makes the
+    application vulnerable to Cross-Site Request Forgery attacks.
+    
+    Args:
+        username: The authenticated user's username
+        csrf_token: The CSRF token from X-CSRF-Token header
+        x_lab_mode: The X-Lab-Mode header value
+        method: HTTP method (POST, PUT, PATCH, DELETE)
+    
+    Raises:
+        HTTPException: If CSRF validation fails in Secure Mode
+    """
+    # Determine Lab Mode using server-side gating (env var + header)
+    # This ensures the vulnerability is only active when explicitly enabled
+    is_lab_mode = LAB_MODE_ENABLED and x_lab_mode and x_lab_mode.lower() in ("true", "1", "yes")
+    
+    if is_lab_mode:
+        # Lab Mode: CSRF protection is bypassed (Vulnerability #4)
+        # State-changing requests succeed without CSRF token validation
+        return
+    
+    # Secure Mode: Require CSRF token for state-changing methods
+    # This prevents CSRF attacks by validating the token matches the user's session
+    if method in ("POST", "PUT", "PATCH", "DELETE"):
+        if not validate_csrf_token(username, csrf_token):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="CSRF token validation failed. Please refresh the page and try again.",
+            )
+
+
 def authenticate_user(username: str, password: str) -> Optional[Dict[str, Any]]:
     """Authenticate a user by username and password."""
     conn = _get_db_connection()
@@ -466,10 +544,15 @@ async def login(request: LoginRequest):
         data={"sub": user["username"], "user_id": user["id"]},
         expires_delta=access_token_expires
     )
+    
+    # Generate CSRF token for the user
+    csrf_token = get_csrf_token_for_user(user["username"])
+    
     return LoginResponse(
         access_token=access_token,
         token_type="bearer",
-        username=user["username"]
+        username=user["username"],
+        csrf_token=csrf_token
     )
 
 
@@ -495,7 +578,42 @@ async def get_session(
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-    return SessionResponse(username=username, authenticated=True)
+    # Get or generate CSRF token for the user
+    csrf_token = get_csrf_token_for_user(username)
+    
+    return SessionResponse(
+        username=username,
+        authenticated=True,
+        csrf_token=csrf_token
+    )
+
+
+@app.get("/auth/csrf", response_model=CSRFResponse)
+async def get_csrf_token(
+    credentials: HTTPAuthorizationCredentials = security
+):
+    """Get CSRF token for the current session."""
+    token = credentials.credentials
+    payload = verify_token(token)
+    if payload is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid authentication credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    username: str = payload.get("sub")
+    if username is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid authentication credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    # Get or generate CSRF token for the user
+    csrf_token = get_csrf_token_for_user(username)
+    
+    return CSRFResponse(csrf_token=csrf_token)
 
 
 @app.get("/auth/check-lab-access")
@@ -717,7 +835,9 @@ async def predict_batch(request: BatchPredictionRequest):
 async def save_analysis(
     request: SaveAnalysisRequest,
     x_user_id: Optional[str] = Header(None, alias="X-User-Id"),
-    x_lab_mode: Optional[str] = Header(None, alias="X-Lab-Mode")
+    x_lab_mode: Optional[str] = Header(None, alias="X-Lab-Mode"),
+    x_csrf_token: Optional[str] = Header(None, alias="X-CSRF-Token"),
+    authorization: Optional[str] = Header(None)
 ):
     """Persist a completed analysis to SQLite."""
     # Require user_id header
@@ -726,6 +846,26 @@ async def save_analysis(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="X-User-Id header is required",
         )
+    
+    # Get username from JWT token for CSRF validation
+    username = None
+    if authorization and authorization.startswith("Bearer "):
+        token = authorization.replace("Bearer ", "")
+        payload = verify_token(token)
+        if payload:
+            username = payload.get("sub")
+            logger.info(f"CSRF Debug: Extracted username from JWT: {username}")
+        else:
+            logger.warning("CSRF Debug: JWT token verification failed")
+    else:
+        logger.warning("CSRF Debug: No Authorization header or not Bearer token")
+    
+    # Validate CSRF token in Secure Mode
+    if username:
+        logger.info(f"CSRF Debug: Validating CSRF for user '{username}', token present: {bool(x_csrf_token)}, lab_mode: {x_lab_mode}")
+        require_csrf_token(username, x_csrf_token, x_lab_mode, "POST")
+    else:
+        logger.warning("CSRF Debug: No username extracted, skipping CSRF validation")
     
     message_text = request.message_text
     if not message_text or not message_text.strip():

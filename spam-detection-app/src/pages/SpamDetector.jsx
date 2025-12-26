@@ -6,7 +6,34 @@ import '../styles/confidence-chart.css';
 import '../styles/model-comparison-chart.css';
 import '../styles/kmeans-cluster-chart.css';
 
-function SpamDetector({ labMode = false }) {
+function SpamDetector({ labMode = false, csrfToken = null, onRefreshCsrf = null }) {
+  // Debug: Log CSRF token status when component receives it
+  useEffect(() => {
+    if (csrfToken) {
+      console.log('✅ SpamDetector received CSRF token:', csrfToken.substring(0, 20) + '...');
+    } else {
+      console.warn('⚠️ SpamDetector: No CSRF token provided');
+      // Try to fetch CSRF token if we're authenticated but don't have token
+      const token = localStorage.getItem('auth_token');
+      if (token) {
+        console.log('Attempting to fetch CSRF token...');
+        fetch('http://localhost:8000/auth/session', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        })
+        .then(r => r.ok ? r.json() : null)
+        .then(data => {
+          if (data && data.csrf_token) {
+            console.log('✅ CSRF token fetched in SpamDetector');
+            // Note: We can't set it here since it's a prop, but the parent should update
+          }
+        })
+        .catch(err => console.warn('Failed to fetch CSRF token:', err));
+      }
+    }
+  }, [csrfToken]);
+  
   const [text, setText] = useState('');
   const [selectedModels, setSelectedModels] = useState(['xgboost']); // Changed to array
   const [result, setResult] = useState(null);
@@ -21,6 +48,8 @@ function SpamDetector({ labMode = false }) {
   const analysisSectionRef = useRef(null);
   const [modelTooltip, setModelTooltip] = useState({ visible: false, text: '', x: 0, y: 0 });
   const [wordLimitError, setWordLimitError] = useState(false);
+  const [saveMessage, setSaveMessage] = useState(null); // Enhanced success/error messages
+  const [lastRequest, setLastRequest] = useState(null); // For request inspector
 
   // Generate or retrieve user_id from localStorage
   // If authenticated, use username; otherwise generate a random user_id
@@ -352,18 +381,114 @@ function SpamDetector({ labMode = false }) {
     }
   };
 
-  const handleSaveAnalysis = async () => {
+  const handleSaveAnalysis = async (skipCsrf = false) => {
     if (!result || !predictionData) return;
+
+    // In Secure Mode, require CSRF token unless intentionally skipping
+    let currentCsrfToken = csrfToken;
+    
+    if (!labMode && !skipCsrf && !currentCsrfToken) {
+      // Try to fetch CSRF token directly if we're authenticated
+      const token = localStorage.getItem('auth_token');
+      if (token) {
+        console.log('⚠️ CSRF token missing, attempting to fetch from session...');
+        try {
+          const response = await fetch('http://localhost:8000/auth/session', {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
+          });
+          if (response.ok) {
+            const data = await response.json();
+            if (data.csrf_token) {
+              currentCsrfToken = data.csrf_token;
+              console.log('✅ CSRF token fetched successfully');
+              // Update parent state via refresh callback
+              if (onRefreshCsrf) {
+                await onRefreshCsrf();
+              }
+            }
+          }
+        } catch (err) {
+          console.warn('Failed to fetch CSRF token:', err);
+        }
+      }
+      
+      // If still no token after trying to fetch, show error
+      if (!currentCsrfToken) {
+        setSaveMessage({
+          type: 'error',
+          title: '❌ CSRF Token Required',
+          message: 'Cannot save: CSRF token is missing. Please refresh the page or try again.',
+          explanation: 'In Secure Mode, all state-changing requests require a valid CSRF token for security.',
+          mode: 'secure'
+        });
+        return;
+      }
+    }
+
+    setSaveMessage(null);
+    setLastRequest(null);
 
     try {
       const userId = getUserId();
+      const headers = { 
+        'Content-Type': 'application/json',
+        'X-User-Id': userId,
+        'X-Lab-Mode': labMode ? 'true' : 'false'
+      };
+      
+      // Use currentCsrfToken (which may have been fetched above)
+      const tokenToUse = currentCsrfToken || csrfToken;
+      
+      // Add CSRF token if available and not skipping
+      const csrfIncluded = !skipCsrf && tokenToUse;
+      
+      // Debug logging
+      console.log('🔍 CSRF Debug Info:', {
+        skipCsrf,
+        csrfToken: tokenToUse ? 'Present' : 'Missing',
+        csrfTokenLength: tokenToUse ? tokenToUse.length : 0,
+        csrfIncluded,
+        labMode,
+        tokenSource: currentCsrfToken && !csrfToken ? 'Fetched on-demand' : 'From props'
+      });
+      
+      if (csrfIncluded) {
+        headers['X-CSRF-Token'] = tokenToUse;
+        console.log('✅ CSRF Token added to headers');
+      } else {
+        console.log('❌ CSRF Token NOT included:', {
+          skipCsrf,
+          hasToken: !!tokenToUse,
+          reason: skipCsrf ? 'Intentionally skipped' : 'Token missing'
+        });
+      }
+      
+      // Add Authorization header if authenticated
+      const token = localStorage.getItem('auth_token');
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+        console.log('✅ Authorization header added');
+      } else {
+        console.log('❌ No auth token found');
+      }
+      
+      // Record request details for inspector
+      const requestDetails = {
+        method: 'POST',
+        endpoint: '/analysis/save',
+        csrfIncluded: csrfIncluded,
+        labMode: labMode,
+        timestamp: new Date().toLocaleTimeString()
+      };
+      setLastRequest(requestDetails);
+      
+      console.log('📤 Sending request with headers:', Object.keys(headers));
+      
       const response = await fetch('http://localhost:8000/analysis/save', {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'X-User-Id': userId,
-          'X-Lab-Mode': labMode ? 'true' : 'false'
-        },
+        headers: headers,
         body: JSON.stringify({
           message_text: text,
           selected_models: selectedModels,
@@ -376,18 +501,124 @@ function SpamDetector({ labMode = false }) {
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Save analysis error:', errorText);
-        throw new Error(`Failed to save analysis: ${response.status}`);
+        let errorMessage = `Failed to save analysis: ${response.status}`;
+        let errorDetail = '';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.detail || errorMessage;
+          errorDetail = errorData.detail || '';
+        } catch {
+          const errorText = await response.text();
+          if (errorText) {
+            try {
+              const parsed = JSON.parse(errorText);
+              errorMessage = parsed.detail || errorMessage;
+              errorDetail = parsed.detail || '';
+            } catch {
+              errorMessage = errorText || errorMessage;
+              errorDetail = errorText || '';
+            }
+          }
+        }
+        
+        // Enhanced error message for CSRF failures
+        if (errorDetail.includes('CSRF')) {
+          setSaveMessage({
+            type: 'error',
+            title: '❌ CSRF Protection Active',
+            message: 'This request was blocked because it lacked a valid CSRF token.',
+            explanation: labMode 
+              ? 'Note: In Lab Mode, CSRF protection is bypassed. This error should not occur in Lab Mode.'
+              : 'This prevents Cross-Site Request Forgery (CSRF) attacks. In Secure Mode, all state-changing requests require a valid CSRF token.',
+            mode: 'secure'
+          });
+        } else {
+          setSaveMessage({
+            type: 'error',
+            title: '❌ Save Failed',
+            message: errorMessage,
+            explanation: '',
+            mode: labMode ? 'lab' : 'secure'
+          });
+        }
+        
+        // Update request inspector
+        setLastRequest({
+          ...requestDetails,
+          status: response.status,
+          success: false,
+          error: errorDetail
+        });
+        
+        throw new Error(errorMessage);
       }
 
       const saved = await response.json();
+      
+      // Enhanced success message
+      if (skipCsrf && labMode) {
+        setSaveMessage({
+          type: 'warning',
+          title: '⚠️ CSRF Bypassed (Lab Mode)',
+          message: 'Analysis saved successfully without CSRF token.',
+          explanation: 'In Lab Mode, CSRF protection is intentionally disabled. In Secure Mode, this request would be blocked.',
+          mode: 'lab'
+        });
+      } else if (csrfIncluded) {
+        setSaveMessage({
+          type: 'success',
+          title: '✅ Saved Successfully',
+          message: 'Analysis saved with CSRF token validated.',
+          explanation: 'The CSRF token was validated, preventing potential CSRF attacks.',
+          mode: 'secure'
+        });
+      } else if (!csrfIncluded && labMode) {
+        // Success in Lab Mode without CSRF (vulnerability active)
+        setSaveMessage({
+          type: 'warning',
+          title: '⚠️ Saved (CSRF Bypassed)',
+          message: 'Analysis saved successfully without CSRF token.',
+          explanation: 'Lab Mode: CSRF protection is disabled. This demonstrates the CSRF vulnerability.',
+          mode: 'lab'
+        });
+      } else if (!csrfIncluded && !labMode) {
+        // This shouldn't happen in Secure Mode, but if it does, show warning
+        setSaveMessage({
+          type: 'warning',
+          title: '⚠️ Saved (No CSRF Token)',
+          message: 'Analysis saved, but CSRF token was not included.',
+          explanation: 'In Secure Mode, this request should have been blocked. Please check your configuration.',
+          mode: 'secure'
+        });
+      } else {
+        setSaveMessage({
+          type: 'success',
+          title: '✅ Saved Successfully',
+          message: 'Analysis saved.',
+          explanation: '',
+          mode: labMode ? 'lab' : 'secure'
+        });
+      }
+      
+      // Update request inspector
+      setLastRequest({
+        ...requestDetails,
+        status: response.status,
+        success: true
+      });
+      
       // Optimistically refresh list and select the newly saved analysis
       await fetchSavedAnalyses();
       setSelectedAnalysis(saved);
+      
+      // Clear message after 5 seconds
+      setTimeout(() => setSaveMessage(null), 5000);
     } catch (err) {
       console.error('Error saving analysis:', err);
-      alert(err.message || 'Failed to save analysis.');
+      // Don't show alert if we already showed enhanced message
+      if (!saveMessage) {
+        alert(err.message || 'Failed to save analysis.');
+      }
     }
   };
 
@@ -601,17 +832,50 @@ function SpamDetector({ labMode = false }) {
                       </>
                     )}
 
+                    {/* Enhanced CSRF Messages */}
+                    {saveMessage && (
+                      <div className={`csrf-message csrf-message--${saveMessage.type}`}>
+                        <div className="csrf-message-header">
+                          <strong>{saveMessage.title}</strong>
+                        </div>
+                        <div className="csrf-message-body">
+                          <p>{saveMessage.message}</p>
+                          {saveMessage.explanation && (
+                            <p className="csrf-explanation">{saveMessage.explanation}</p>
+                          )}
+                        </div>
+                        <button 
+                          className="csrf-message-close"
+                          onClick={() => setSaveMessage(null)}
+                          aria-label="Close message"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    )}
+
                     {/* Saved Analyses (History) - secure-only, plain text rendering */}
                     <div className={`saved-analyses-section ${labMode ? 'saved-analyses-section--lab' : 'saved-analyses-section--secure'}`}>
                       <div className="saved-analyses-header">
                         <h3 className="charts-section-title">Saved Analyses</h3>
-                        <div style={{ display: 'flex', gap: '10px' }}>
+                        <div className="save-buttons-group">
                           <button
-                            className={`btn ${labMode ? 'btn-lab' : 'btn-secure'}`}
-                            onClick={handleSaveAnalysis}
+                            className={`btn btn-save-normal ${labMode ? 'btn-lab' : 'btn-secure'}`}
+                            onClick={() => handleSaveAnalysis(false)}
                             disabled={!text.trim() || !predictionData}
+                            title="Save with CSRF protection (normal save)"
                           >
                             Save Analysis
+                          </button>
+                          <button
+                            className={`btn btn-save-test ${labMode ? 'btn-lab-test' : 'btn-secure-test'}`}
+                            onClick={() => handleSaveAnalysis(true)}
+                            disabled={!text.trim() || !predictionData || (!labMode && !csrfToken)}
+                            title={labMode 
+                              ? "Test: Save without CSRF token (Lab Mode - will succeed)" 
+                              : "Test: Save without CSRF token (Secure Mode - will fail)"}
+                          >
+                            {labMode ? 'Test: Save (No CSRF)' : 'Test: Save (No CSRF)'}
                           </button>
                           <button
                             className="btn btn-secondary"
@@ -826,6 +1090,60 @@ function SpamDetector({ labMode = false }) {
         >
           ↑
         </button>
+      )}
+      {/* Request Inspector Widget */}
+      {lastRequest && (
+        <div className="request-inspector">
+          <div className="request-inspector-header">
+            <span className="request-inspector-title">🔍 Request Inspector</span>
+            <button 
+              className="request-inspector-close"
+              onClick={() => setLastRequest(null)}
+              aria-label="Close inspector"
+            >
+              ×
+            </button>
+          </div>
+          <div className="request-inspector-body">
+            <div className="request-inspector-row">
+              <span className="request-inspector-label">Method:</span>
+              <span className="request-inspector-value">{lastRequest.method}</span>
+            </div>
+            <div className="request-inspector-row">
+              <span className="request-inspector-label">Endpoint:</span>
+              <span className="request-inspector-value">{lastRequest.endpoint}</span>
+            </div>
+            <div className="request-inspector-row">
+              <span className="request-inspector-label">Mode:</span>
+              <span className={`request-inspector-value request-inspector-mode--${lastRequest.labMode ? 'lab' : 'secure'}`}>
+                {lastRequest.labMode ? 'Lab Mode' : 'Secure Mode'}
+              </span>
+            </div>
+            <div className="request-inspector-row">
+              <span className="request-inspector-label">CSRF Token:</span>
+              <span className={`request-inspector-value ${lastRequest.csrfIncluded ? 'request-inspector-csrf--included' : 'request-inspector-csrf--missing'}`}>
+                {lastRequest.csrfIncluded ? '✅ Included' : '❌ Missing'}
+              </span>
+            </div>
+            {lastRequest.status && (
+              <div className="request-inspector-row">
+                <span className="request-inspector-label">Status:</span>
+                <span className={`request-inspector-value ${lastRequest.success ? 'request-inspector-status--success' : 'request-inspector-status--error'}`}>
+                  {lastRequest.status} {lastRequest.success ? '✅' : '❌'}
+                </span>
+              </div>
+            )}
+            <div className="request-inspector-row">
+              <span className="request-inspector-label">Time:</span>
+              <span className="request-inspector-value">{lastRequest.timestamp}</span>
+            </div>
+            {lastRequest.error && (
+              <div className="request-inspector-error">
+                <strong>Error:</strong> {lastRequest.error}
+              </div>
+            )}
+          </div>
+        </div>
       )}
     </div>
   );

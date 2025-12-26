@@ -1046,6 +1046,285 @@
   transform: translateY(0);
 }
 
+/* CSRF Enhanced Messages */
+.csrf-message {
+  margin: 1.5rem 0;
+  padding: 1rem 1.25rem;
+  border-radius: 8px;
+  border-left: 4px solid;
+  position: relative;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.csrf-message--success {
+  background-color: #d4edda;
+  border-color: #28a745;
+  color: #155724;
+}
+
+.csrf-message--error {
+  background-color: #f8d7da;
+  border-color: #dc3545;
+  color: #721c24;
+}
+
+.csrf-message--warning {
+  background-color: #fff3cd;
+  border-color: #ffc107;
+  color: #856404;
+}
+
+.csrf-message-header {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.csrf-message-body {
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.csrf-explanation {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  font-style: italic;
+  opacity: 0.9;
+}
+
+.csrf-message-close {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: inherit;
+  opacity: 0.7;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.csrf-message-close:hover {
+  opacity: 1;
+}
+
+/* Save Buttons Group */
+.save-buttons-group {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btn-save-normal {
+  min-width: 140px;
+}
+
+.btn-save-test {
+  min-width: 160px;
+  font-size: 0.9rem;
+}
+
+.btn-secure-test:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-lab-test {
+  background-color: #ffc107;
+  color: #000;
+  border: 2px solid #ff9800;
+}
+
+.btn-lab-test:hover:not(:disabled) {
+  background-color: #ff9800;
+  transform: translateY(-2px);
+}
+
+/* Request Inspector Widget */
+.request-inspector {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 320px;
+  max-width: calc(100vw - 40px);
+  background: white;
+  border: 2px solid #4CAF50;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  animation: slideUpIn 0.3s ease-out;
+}
+
+@keyframes slideUpIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.request-inspector-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background-color: #4CAF50;
+  color: white;
+  border-radius: 6px 6px 0 0;
+}
+
+.request-inspector-title {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.request-inspector-close {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  opacity: 0.8;
+}
+
+.request-inspector-close:hover {
+  opacity: 1;
+}
+
+.request-inspector-body {
+  padding: 1rem;
+  font-size: 0.85rem;
+}
+
+.request-inspector-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #eee;
+}
+
+.request-inspector-row:last-child {
+  border-bottom: none;
+}
+
+.request-inspector-label {
+  font-weight: 600;
+  color: #666;
+  min-width: 100px;
+}
+
+.request-inspector-value {
+  color: #333;
+  text-align: right;
+  flex: 1;
+}
+
+.request-inspector-mode--lab {
+  color: #e74c3c;
+  font-weight: 600;
+}
+
+.request-inspector-mode--secure {
+  color: #27ae60;
+  font-weight: 600;
+}
+
+.request-inspector-csrf--included {
+  color: #27ae60;
+  font-weight: 600;
+}
+
+.request-inspector-csrf--missing {
+  color: #e74c3c;
+  font-weight: 600;
+}
+
+.request-inspector-status--success {
+  color: #27ae60;
+  font-weight: 600;
+}
+
+.request-inspector-status--error {
+  color: #e74c3c;
+  font-weight: 600;
+}
+
+.request-inspector-error {
+  margin-top: 0.75rem;
+  padding: 0.5rem;
+  background-color: #fee;
+  border: 1px solid #fcc;
+  border-radius: 4px;
+  color: #c33;
+  font-size: 0.8rem;
+}
+
+/* Responsive Request Inspector */
+@media (max-width: 768px) {
+  .request-inspector {
+    width: calc(100vw - 40px);
+    bottom: 10px;
+    right: 10px;
+  }
+  
+  .save-buttons-group {
+    flex-direction: column;
+  }
+  
+  .btn-save-normal,
+  .btn-save-test {
+    width: 100%;
+    min-width: auto;
+  }
+  
+  .csrf-message {
+    margin: 1rem 0;
+    padding: 0.75rem 1rem;
+  }
+}
+
+/* Responsive CSRF Status Badge */
+@media (max-width: 480px) {
+  .csrf-status-badge .csrf-text {
+    display: none;
+  }
+  
+  .csrf-status-badge {
+    padding: 6px 8px;
+  }
+}
+
 /* Responsive scroll to top button */
 @media (max-width: 767px) {
   .scroll-to-top-btn {
