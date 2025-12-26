@@ -4,10 +4,15 @@ import time
 import json
 import sqlite3
 import os
+from datetime import datetime, timedelta
+from secrets import token_urlsafe
 
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 import logging
+import bcrypt
+from jose import JWTError, jwt
 
 # Add project root to Python path
 project_root = Path(__file__).parent.parent
@@ -45,12 +50,21 @@ DB_PATH = project_root / "backend" / "db" / "analyses.db"
 # If set to true (default), Lab Mode is controlled by X-Lab-Mode header from frontend
 LAB_MODE_ENABLED = os.getenv("LAB_MODE_ENABLED", "true").lower() in ("true", "1", "yes")
 
+# JWT Configuration
+SECRET_KEY = os.getenv("JWT_SECRET_KEY", "hackthestack-secret-key-change-in-production")
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_HOURS = 24
+
+# Security scheme for JWT tokens
+security = HTTPBearer()
+
 
 def _init_db() -> None:
-    """Initialize SQLite database for saved analyses."""
+    """Initialize SQLite database for saved analyses and users."""
     DB_PATH.parent.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(DB_PATH)
     try:
+        # Create saved_analyses table
         conn.execute(
             """
             CREATE TABLE IF NOT EXISTS saved_analyses (
@@ -72,6 +86,39 @@ def _init_db() -> None:
             conn.execute("ALTER TABLE saved_analyses ADD COLUMN user_id TEXT")
             conn.commit()
             logger.info("Added user_id column to saved_analyses table")
+        
+        # Create users table
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT UNIQUE NOT NULL,
+                password_hash TEXT NOT NULL,
+                created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            )
+            """
+        )
+        conn.commit()
+        
+        # Initialize default users if they don't exist
+        cursor.execute("SELECT COUNT(*) FROM users")
+        user_count = cursor.fetchone()[0]
+        
+        if user_count == 0:
+            # Create password hashes for nevan and naven
+            nevan_hash = bcrypt.hashpw("nevan".encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+            naven_hash = bcrypt.hashpw("naven".encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+            
+            cursor.execute(
+                "INSERT INTO users (username, password_hash) VALUES (?, ?)",
+                ("nevan", nevan_hash)
+            )
+            cursor.execute(
+                "INSERT INTO users (username, password_hash) VALUES (?, ?)",
+                ("naven", naven_hash)
+            )
+            conn.commit()
+            logger.info("Initialized default users: nevan and naven")
     finally:
         conn.close()
 
@@ -212,6 +259,22 @@ class SaveAnalysisRequest(BaseModel):
     prediction_summary: Optional[Dict[str, Any]] = None
 
 
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+
+
+class LoginResponse(BaseModel):
+    access_token: str
+    token_type: str
+    username: str
+
+
+class SessionResponse(BaseModel):
+    username: str
+    authenticated: bool
+
+
 class SavedAnalysisSummary(BaseModel):
     id: int
     created_at: str
@@ -296,6 +359,65 @@ def _compute_text_stats(text: str) -> Dict[str, Any]:
     }
 
 
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
+    """Create a JWT access token."""
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(hours=ACCESS_TOKEN_EXPIRE_HOURS)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+
+def verify_token(token: str) -> Optional[Dict[str, Any]]:
+    """Verify and decode a JWT token."""
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return payload
+    except JWTError:
+        return None
+
+
+def authenticate_user(username: str, password: str) -> Optional[Dict[str, Any]]:
+    """Authenticate a user by username and password."""
+    conn = _get_db_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT id, username, password_hash FROM users WHERE username = ?",
+            (username,)
+        )
+        row = cursor.fetchone()
+        if row is None:
+            return None
+        
+        user_id, db_username, password_hash = row
+        if bcrypt.checkpw(password.encode('utf-8'), password_hash.encode('utf-8')):
+            return {"id": user_id, "username": db_username}
+        return None
+    finally:
+        conn.close()
+
+
+def get_user_by_username(username: str) -> Optional[Dict[str, Any]]:
+    """Get user information by username."""
+    conn = _get_db_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT id, username FROM users WHERE username = ?",
+            (username,)
+        )
+        row = cursor.fetchone()
+        if row is None:
+            return None
+        return {"id": row[0], "username": row[1]}
+    finally:
+        conn.close()
+
+
 async def _run_models_for_text(
     text: str, model_ids: List[str]
 ) -> Tuple[List[ModelPrediction], Dict[str, Any], float]:
@@ -326,6 +448,74 @@ async def _run_models_for_text(
     total_time_ms = round((time.time() - start_time) * 1000, 2)
 
     return predictions, text_stats, total_time_ms
+
+
+@app.post("/auth/login", response_model=LoginResponse)
+async def login(request: LoginRequest):
+    """Authenticate user and return JWT token."""
+    user = authenticate_user(request.username, request.password)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    access_token_expires = timedelta(hours=ACCESS_TOKEN_EXPIRE_HOURS)
+    access_token = create_access_token(
+        data={"sub": user["username"], "user_id": user["id"]},
+        expires_delta=access_token_expires
+    )
+    return LoginResponse(
+        access_token=access_token,
+        token_type="bearer",
+        username=user["username"]
+    )
+
+
+@app.get("/auth/session", response_model=SessionResponse)
+async def get_session(
+    credentials: HTTPAuthorizationCredentials = security
+):
+    """Get current session information from JWT token."""
+    token = credentials.credentials
+    payload = verify_token(token)
+    if payload is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid authentication credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    username: str = payload.get("sub")
+    if username is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid authentication credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    return SessionResponse(username=username, authenticated=True)
+
+
+@app.get("/auth/check-lab-access")
+async def check_lab_access(
+    authorization: Optional[str] = Header(None)
+):
+    """Check if user is authenticated and can access lab mode."""
+    if not authorization or not authorization.startswith("Bearer "):
+        return {"authenticated": False, "can_access_lab": False}
+    
+    token = authorization.replace("Bearer ", "")
+    payload = verify_token(token)
+    if payload is None:
+        return {"authenticated": False, "can_access_lab": False}
+    
+    username: str = payload.get("sub")
+    if username is None:
+        return {"authenticated": False, "can_access_lab": False}
+    
+    return {"authenticated": True, "can_access_lab": True, "username": username}
 
 
 @app.get("/")

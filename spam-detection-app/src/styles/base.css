@@ -85,10 +85,7 @@ body {
 
 /* Global dual-mode toggle */
 .mode-toggle {
-  position: absolute;
-  top: 50%;
-  right: 16px;
-  transform: translateY(-50%);
+  position: relative; /* Changed from absolute */
   padding: 4px 12px;
   border-radius: 999px;
   border: 1px solid var(--accent-color);
@@ -102,6 +99,7 @@ body {
   align-items: center;
   gap: 6px;
   backdrop-filter: blur(6px);
+  flex-shrink: 0; /* Prevent shrinking */
   transition:
     background-color 0.25s ease,
     color 0.25s ease,
@@ -119,8 +117,8 @@ body {
   outline-offset: 2px;
 }
 
-.mode-toggle:hover {
-  transform: translateY(-50%) scale(1.05);
+.mode-toggle:hover:not(:disabled) {
+  transform: scale(1.05);
 }
 
 :root[data-mode="lab"] .mode-toggle {

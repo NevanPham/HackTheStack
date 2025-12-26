@@ -11,6 +11,9 @@ torch==2.8.0
 joblib==1.5.2
 fastapi
 uvicorn
+bcrypt
+python-jose[cryptography]
+python-multipart
 # ---------------------------------------------
 # Frontend (React) dependencies - for reference
 # Note: These are JavaScript packages; install with npm/yarn, not pip.

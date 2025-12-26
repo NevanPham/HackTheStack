@@ -2,12 +2,13 @@
 .navbar {
   display: flex;
   align-items: center;
-  justify-content: center; /* Keep nav links centered */
+  justify-content: space-between; /* Space between left, center, and right */
   background-color: var(--navbar-bg);
   padding: 10px 20px;
   flex-wrap: wrap;
   width: 100%;
-  position: relative; /* allow absolute-positioned toggle inside */
+  position: relative;
+  gap: 20px;
 }
 
 /* Navigation links */
@@ -21,6 +22,8 @@
   font-size: 20px;
   font-family: "Georgia", serif;
   font-weight: bold;
+  flex: 1; /* Take up remaining space to center */
+  min-width: 0; /* Allow flex shrinking if needed */
 }
 
 .nav-links li {
@@ -117,12 +120,97 @@ footer {
   word-wrap: break-word !important;
 }
 
+/* Header right section (auth info) */
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
+  flex-shrink: 0; /* Prevent shrinking */
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9rem;
+}
+
+.username {
+  color: var(--nav-link-color);
+  font-weight: 500;
+}
+
+.logout-button {
+  padding: 6px 12px;
+  background-color: transparent;
+  border: 1px solid var(--accent-color);
+  color: var(--accent-color);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all 0.3s;
+  font-family: "Georgia", serif;
+}
+
+.logout-button:hover {
+  background-color: var(--accent-color);
+  color: white;
+}
+
+.login-link {
+  text-decoration: none;
+  color: var(--nav-link-color);
+  font-weight: bold;
+  padding: 8px 15px;
+  border: 1px solid var(--accent-color);
+  border-radius: 5px;
+  transition: all 0.3s;
+  font-family: "Georgia", serif;
+}
+
+.login-link:hover {
+  background-color: var(--accent-color);
+  color: white;
+}
+
+.mode-toggle:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* Ensure tooltips don't appear in footer on small screens */
 @media (max-width: 480px) {
   .d3-tooltip {
     max-width: 150px !important;
     font-size: 12px !important;
     padding: 8px !important;
+  }
+  
+  .navbar {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .mode-toggle {
+    align-self: flex-start;
+  }
+  
+  .header-right {
+    align-self: flex-end;
+    width: 100%;
+    justify-content: flex-end;
+  }
+  
+  .user-info {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .nav-links {
+    width: 100%;
+    justify-content: center;
   }
 }
 

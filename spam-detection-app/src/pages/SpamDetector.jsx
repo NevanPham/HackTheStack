@@ -23,7 +23,15 @@ function SpamDetector({ labMode = false }) {
   const [wordLimitError, setWordLimitError] = useState(false);
 
   // Generate or retrieve user_id from localStorage
+  // If authenticated, use username; otherwise generate a random user_id
   const getUserId = () => {
+    // Check if user is authenticated (has username)
+    const username = localStorage.getItem('username');
+    if (username) {
+      return username;
+    }
+    
+    // Fallback to generated user_id for unauthenticated users
     const STORAGE_KEY = 'hts_user_id';
     let userId = localStorage.getItem(STORAGE_KEY);
     if (!userId) {

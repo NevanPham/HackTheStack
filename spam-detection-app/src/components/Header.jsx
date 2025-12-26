@@ -1,8 +1,19 @@
 import { Link } from 'react-router-dom';
 
-function Header({ currentPath, labMode, onToggleLabMode }) {
+function Header({ currentPath, labMode, onToggleLabMode, isAuthenticated, username, onLogout }) {
   return (
     <header className="navbar">
+      <button
+        type="button"
+        className="mode-toggle"
+        onClick={onToggleLabMode}
+        aria-pressed={labMode}
+        aria-label={labMode ? 'Switch to secure mode' : 'Switch to lab mode'}
+        disabled={!isAuthenticated && !labMode}
+        title={!isAuthenticated && !labMode ? 'Login required to access Lab Mode' : ''}
+      >
+        <span>{labMode ? 'LAB MODE' : 'SECURE'}</span>
+      </button>
       <nav>
         <ul className="nav-links">
           <li>
@@ -41,15 +52,25 @@ function Header({ currentPath, labMode, onToggleLabMode }) {
           )}
         </ul>
       </nav>
-      <button
-        type="button"
-        className="mode-toggle"
-        onClick={onToggleLabMode}
-        aria-pressed={labMode}
-        aria-label={labMode ? 'Switch to secure mode' : 'Switch to lab mode'}
-      >
-        <span>{labMode ? 'LAB MODE' : 'SECURE'}</span>
-      </button>
+      <div className="header-right">
+        {isAuthenticated ? (
+          <div className="user-info">
+            <span className="username">Logged in as: {username}</span>
+            <button
+              type="button"
+              className="logout-button"
+              onClick={onLogout}
+              aria-label="Logout"
+            >
+              Logout
+            </button>
+          </div>
+        ) : (
+          <Link to="/login" className="login-link">
+            Login
+          </Link>
+        )}
+      </div>
     </header>
   );
 }
