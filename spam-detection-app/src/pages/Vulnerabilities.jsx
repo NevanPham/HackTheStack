@@ -211,6 +211,45 @@ function Vulnerabilities({ labMode }) {
           </div>
         </div>
       </section>
+
+      <section className="vuln-section">
+        <div className="vuln-card">
+          <p className="vuln-label">Vulnerability #6: Weak Authentication (Brute Force)</p>
+          <div className="vuln-grid">
+            <div className="vuln-tile">
+              <h3>❌ What went wrong</h3>
+              <p>
+                In Lab Mode, the login authentication function does not implement rate limiting or account lockout mechanisms. When a user attempts to log in with incorrect credentials, the application processes the request without tracking or limiting failed attempts. The critical flaw: the application allows unlimited failed login attempts without any protective measures, making it vulnerable to brute force attacks. An attacker can systematically try different username and password combinations without being blocked or slowed down. This breaks the fundamental security principle: authentication systems must implement protective measures to prevent automated guessing attacks. In Secure Mode, the application implements rate limiting that tracks failed login attempts per user. After three consecutive failed attempts, the account is temporarily locked for 30 seconds, preventing further authentication attempts during that period. This creates a significant barrier to brute force attacks by making them time-consuming and impractical.
+              </p>
+            </div>
+            <div className="vuln-tile">
+              <h3>🔍 How it's exploited</h3>
+              <p>
+                An attacker can systematically attempt to guess user credentials by submitting many different username and password combinations. Without rate limiting, each failed attempt is processed immediately, allowing the attacker to try hundreds or thousands of combinations in a short period. The attack works because the application processes every login request without tracking patterns or implementing delays. In Lab Mode, there is no mechanism to detect or prevent repeated failed attempts from the same source. The attacker can automate the process using scripts or tools that rapidly submit login requests with different credentials. More sophisticated attacks can use wordlists of common passwords, dictionary attacks, or credential stuffing (using leaked credentials from other breaches). The vulnerability exists at the authentication layer: the absence of rate limiting means the application cannot distinguish between legitimate users making occasional mistakes and attackers systematically trying to break in. The attack is particularly effective because it requires no special knowledge—just persistence and automation.
+              </p>
+            </div>
+            <div className="vuln-tile">
+              <h3>⚠️ Realistic attack scenario</h3>
+              <p>
+                An attacker identifies a target user account (e.g., "admin" or a known username) and begins a brute force attack. In Lab Mode, the attacker uses an automated tool to submit login requests rapidly, trying common passwords like "password", "123456", "admin", or variations. The application processes each request immediately, returning "Incorrect username or password" for failed attempts. The attacker can try hundreds of passwords per minute without any restrictions. After several hours or days of automated attempts, the attacker successfully guesses the correct password and gains access to the account. In a real application, this could lead to complete account takeover, unauthorized access to sensitive data, or privilege escalation if the compromised account has administrative rights. The attack is particularly dangerous because it can be completely automated and run continuously until successful. The victim may not notice the attack until their account is compromised, as failed login attempts don't trigger any alerts or visible indicators. In Secure Mode, the same attack would be blocked after three failed attempts, forcing the attacker to wait 30 seconds between each set of attempts, making the attack impractical and time-consuming.
+              </p>
+            </div>
+            <div className="vuln-tile">
+              <h3>✅ How it should be fixed</h3>
+              <p>
+                Implement rate limiting and account lockout mechanisms for authentication attempts. In Secure Mode, the application tracks failed login attempts per user identifier (combining IP address and username to prevent one user from blocking others). After three consecutive failed attempts, the account is temporarily locked for 30 seconds, preventing further authentication attempts during that period. The rate limiting system records each failed attempt and checks the lockout status before processing new login requests. If a lockout is active, the request is rejected with a clear message indicating how long the user must wait. After the lockout period expires, the attempt counter is reset, allowing legitimate users to try again. This creates a significant barrier to brute force attacks by making them time-consuming and impractical. Additionally, consider implementing progressive delays (increasing wait times after more attempts), CAPTCHA challenges after multiple failures, or account lockout notifications to alert users of potential attacks. The key principle: authentication systems must implement protective measures that make brute force attacks impractical. Rate limiting is a standard defense that balances security with usability, allowing legitimate users to recover from mistakes while preventing automated attacks.
+              </p>
+            </div>
+          </div>
+
+          <div className="try-it-card">
+            <h3>Try it</h3>
+            <p>
+              Go to the <Link to="/login">Login</Link> page and attempt to log in with incorrect credentials. In Secure Mode (without the "Test in Lab Mode" checkbox), try logging in incorrectly three times. Notice that after the third failed attempt, you receive a message indicating you must wait 30 seconds before trying again. In Lab Mode (with the checkbox enabled), you can attempt unlimited failed logins without any restrictions. This demonstrates how the absence of rate limiting makes brute force attacks possible.
+            </p>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
