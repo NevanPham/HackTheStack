@@ -7,6 +7,8 @@ function Login({ onLogin }) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [testLabMode, setTestLabMode] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -15,10 +17,15 @@ function Login({ onLogin }) {
     setLoading(true);
 
     try {
+      // Use testLabMode state for testing SQL injection vulnerability
+      // This allows testing Lab Mode behavior without being logged in
+      const labMode = testLabMode;
+      
       const response = await fetch('http://localhost:8000/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'X-Lab-Mode': labMode ? 'true' : 'false',
         },
         body: JSON.stringify({ username, password }),
       });
@@ -76,15 +83,26 @@ function Login({ onLogin }) {
           
           <div className="form-group">
             <label htmlFor="password">Password</label>
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              autoComplete="current-password"
-              disabled={loading}
-            />
+            <div className="password-input-wrapper">
+              <input
+                type={showPassword ? "text" : "password"}
+                id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                autoComplete="current-password"
+                disabled={loading}
+              />
+              <button
+                type="button"
+                className="password-toggle"
+                onClick={() => setShowPassword(!showPassword)}
+                disabled={loading}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? "👁️" : "👁️‍🗨️"}
+              </button>
+            </div>
           </div>
           
           <button 
@@ -96,12 +114,52 @@ function Login({ onLogin }) {
           </button>
         </form>
         
+        <div className="login-mode-toggle">
+          <label className="toggle-label">
+            <input
+              type="checkbox"
+              checked={testLabMode}
+              onChange={(e) => setTestLabMode(e.target.checked)}
+              disabled={loading}
+            />
+            <span className="toggle-text">
+              Test in Lab Mode (SQL Injection vulnerable)
+            </span>
+          </label>
+          {testLabMode && (
+            <div className="lab-mode-warning">
+              ⚠️ Lab Mode: Login uses unsafe SQL queries (SQL Injection vulnerable)
+              <br />
+              <strong style={{ marginTop: '0.5rem', display: 'block' }}>Try these payloads:</strong>
+              <ul style={{ margin: '0.5rem 0', paddingLeft: '1.5rem' }}>
+                <li>Username: <code>nevan' OR '1'='1' --</code> | Password: <code>nevan</code> (username injection)</li>
+                <li>Username: <code>nevan</code> | Password: <code>' OR '1'='1' --</code> (password injection)</li>
+                <li>Username: <code>' OR '1'='1</code> | Password: <code>nevan</code> (returns first user)</li>
+              </ul>
+              <small style={{ marginTop: '0.5rem', display: 'block', fontStyle: 'italic' }}>
+                Check your backend terminal logs to see the vulnerable SQL query being executed!
+              </small>
+            </div>
+          )}
+        </div>
+        
         <div className="login-info">
           <p><strong>Test Accounts:</strong></p>
           <ul>
             <li>Username: <code>nevan</code> | Password: <code>nevan</code></li>
             <li>Username: <code>naven</code> | Password: <code>naven</code></li>
           </ul>
+          <p style={{ marginTop: '1rem', fontSize: '0.85rem', color: '#888' }}>
+            <strong>SQL Injection Test:</strong> In Lab Mode, try:
+            <br />
+            • Username: <code>nevan' OR '1'='1' --</code> with password <code>nevan</code> (username injection)
+            <br />
+            • Username: <code>nevan</code> with password <code>' OR '1'='1' --</code> (password injection)
+            <br />
+            <small style={{ display: 'block', marginTop: '0.25rem' }}>
+              SQL injection can bypass authentication. Check backend logs to see the vulnerable query being executed.
+            </small>
+          </p>
         </div>
       </div>
     </div>

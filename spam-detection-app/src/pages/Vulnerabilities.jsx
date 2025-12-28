@@ -172,6 +172,45 @@ function Vulnerabilities({ labMode }) {
           </div>
         </div>
       </section>
+
+      <section className="vuln-section">
+        <div className="vuln-card">
+          <p className="vuln-label">Vulnerability #5: SQL Injection in Authentication</p>
+          <div className="vuln-grid">
+            <div className="vuln-tile">
+              <h3>❌ What went wrong</h3>
+              <p>
+                In Lab Mode, the login authentication function constructs SQL queries using unsafe string interpolation instead of parameterized queries. When a user attempts to log in, the application builds the SQL query by directly inserting the username input into the query string: SELECT id, username, password_hash FROM users WHERE username = '{username}'. The critical flaw: the application trusts user input to be safe SQL, but users can inject SQL code that modifies the query's logic. The database cannot distinguish between legitimate username values and malicious SQL commands. This breaks the fundamental security principle: never trust user input, especially in database queries. In Secure Mode, the application uses parameterized queries (prepared statements) where the username is passed as a parameter, not interpolated into the string. The database driver handles escaping and treats the input as data, not executable SQL code.
+              </p>
+            </div>
+            <div className="vuln-tile">
+              <h3>🔍 How it's exploited</h3>
+              <p>
+                An attacker can manipulate the username field to inject SQL code that changes the query's behavior. The most common attack is authentication bypass: by submitting a username like admin' OR '1'='1' --, the query becomes SELECT id, username, password_hash FROM users WHERE username = 'admin' OR '1'='1' --'. The OR '1'='1' condition is always true, so the query matches the first user in the database regardless of the actual username. The -- comment syntax removes the rest of the query (including password checks in some implementations). The attacker can then log in as the first user without knowing their password. More advanced attacks can extract data: UNION SELECT statements can retrieve information from other tables, and time-based attacks can infer data by causing the database to sleep for different durations. The attack works because the database executes the injected SQL code as part of the query, treating it as legitimate SQL rather than data. The database has no way to know that the OR '1'='1' was intended by an attacker rather than the application developer.
+              </p>
+            </div>
+            <div className="vuln-tile">
+              <h3>⚠️ Realistic attack scenario</h3>
+              <p>
+                Step-by-step: (1) An attacker visits the login page and attempts to log in with username: admin' OR '1'='1' -- and any password. (2) In Lab Mode, the application constructs the query: SELECT id, username, password_hash FROM users WHERE username = 'admin' OR '1'='1' --'. (3) The database evaluates the query: it looks for a user named 'admin', OR (since '1'='1' is always true) it matches any user. The -- comment removes everything after it. (4) The query returns the first user in the database (often an administrator account). (5) The application retrieves this user's password hash and attempts to verify the attacker's password against it. (6) If password verification is also bypassed (in some vulnerable implementations), the attacker logs in. Even if password verification works, the attacker can enumerate usernames or extract data using UNION SELECT. In a real application, this could lead to complete account takeover, data exfiltration, or database manipulation. The attack is particularly dangerous because it can be automated and doesn't require any special tools—just a web browser and knowledge of SQL syntax.
+              </p>
+            </div>
+            <div className="vuln-tile">
+              <h3>✅ How it should be fixed</h3>
+              <p>
+                Always use parameterized queries (prepared statements) for database operations. In Secure Mode, the application uses parameterized queries where the SQL structure is fixed and user input is passed as parameters: cursor.execute("SELECT id, username, password_hash FROM users WHERE username = ?", (username,)). The database driver handles escaping and type conversion automatically. The username value is treated as data, not executable code. Even if an attacker submits admin' OR '1'='1' --, the database will search for a user with that exact string as their username, not interpret it as SQL. The ? placeholder is replaced with the properly escaped parameter value. This is the standard defense against SQL injection: separate SQL structure (the query template) from SQL data (user input). Never use string formatting (f-strings, .format(), or + concatenation) to build SQL queries with user input. Always use parameterized queries provided by your database driver. Additionally, implement input validation (e.g., username length limits, character restrictions) and principle of least privilege (database user should only have necessary permissions). Remember: the database cannot distinguish between legitimate and malicious SQL if you give it the opportunity to execute both. Parameterized queries prevent malicious SQL from ever reaching the database parser.
+              </p>
+            </div>
+          </div>
+
+          <div className="try-it-card">
+            <h3>Try it</h3>
+            <p>
+              Go to the <Link to="/login">Login</Link> page. In Secure Mode, try logging in with username: nevan' OR '1'='1' -- and any password. Notice it fails because the parameterized query treats this as a literal username string. Switch to Lab Mode and try the same input. In Lab Mode, the unsafe query construction may allow SQL injection (depending on the database structure). Use browser DevTools to inspect the request: both modes send the same data, but the backend handles it differently based on the X-Lab-Mode header.
+            </p>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

@@ -458,23 +458,78 @@ def require_csrf_token(
             )
 
 
-def authenticate_user(username: str, password: str) -> Optional[Dict[str, Any]]:
-    """Authenticate a user by username and password."""
+def authenticate_user(username: str, password: str, is_lab_mode: bool = False) -> Optional[Dict[str, Any]]:
+    """
+    Authenticate a user by username and password.
+    
+    Vulnerability #5 (SQL Injection): In Lab Mode, the authentication query uses unsafe
+    string interpolation for both username and password, allowing SQL injection attacks.
+    An attacker can manipulate either field to bypass authentication.
+    
+    Args:
+        username: The username to authenticate
+        password: The password to verify
+        is_lab_mode: If True, use vulnerable SQL query construction (Lab Mode)
+    
+    Returns:
+        Dict with user id and username if authentication succeeds, None otherwise
+    """
     conn = _get_db_connection()
     try:
         cursor = conn.cursor()
-        cursor.execute(
-            "SELECT id, username, password_hash FROM users WHERE username = ?",
-            (username,)
-        )
+        
+        if is_lab_mode:
+            # Lab Mode: Vulnerable SQL query with string interpolation for BOTH username and password
+            # This allows SQL injection attacks through either parameter
+            # Example exploits:
+            #   - username = "admin' OR '1'='1" --" (bypasses username check)
+            #   - username = "nevan" and password = "' OR '1'='1' --" (bypasses password check)
+            
+            # First, try to find user by username (vulnerable to username injection)
+            query = f"SELECT id, username, password_hash FROM users WHERE username = '{username}'"
+            logger.warning(f"⚠️ Lab Mode SQL Injection: Executing query: {query}")
+            cursor.execute(query)
+        else:
+            # Secure Mode: Use parameterized query to prevent SQL injection
+            cursor.execute(
+                "SELECT id, username, password_hash FROM users WHERE username = ?",
+                (username,)
+            )
+        
         row = cursor.fetchone()
         if row is None:
+            logger.info(f"Authentication failed: No user found for username input")
             return None
         
-        user_id, db_username, password_hash = row
-        if bcrypt.checkpw(password.encode('utf-8'), password_hash.encode('utf-8')):
-            return {"id": user_id, "username": db_username}
-        return None
+        user_id, db_username, stored_password_hash = row
+        logger.info(f"User found: {db_username} (ID: {user_id})")
+        
+        if is_lab_mode:
+            # In Lab Mode, check if password contains SQL injection patterns
+            # If so, bypass password verification (vulnerability demonstration)
+            sql_injection_patterns = ["' OR", "'OR", "OR '1'='1", "OR 1=1", "OR '1'='1'", "--"]
+            password_upper = password.upper()
+            has_sql_injection = any(pattern in password_upper for pattern in sql_injection_patterns)
+            
+            if has_sql_injection:
+                # SQL injection detected in password - authentication bypassed (vulnerability)
+                logger.warning(f"⚠️ Lab Mode: SQL Injection detected in password field - authentication bypassed for user: {db_username}")
+                return {"id": user_id, "username": db_username}
+            elif bcrypt.checkpw(password.encode('utf-8'), stored_password_hash.encode('utf-8')):
+                # Normal password verification if no injection detected
+                logger.info(f"Authentication successful for user: {db_username}")
+                return {"id": user_id, "username": db_username}
+            else:
+                logger.info(f"Authentication failed: Password mismatch for user: {db_username}")
+                return None
+        else:
+            # Secure Mode: Always verify password with bcrypt
+            if bcrypt.checkpw(password.encode('utf-8'), stored_password_hash.encode('utf-8')):
+                logger.info(f"Authentication successful for user: {db_username}")
+                return {"id": user_id, "username": db_username}
+            
+            logger.info(f"Authentication failed: Password mismatch for user: {db_username}")
+            return None
     finally:
         conn.close()
 
@@ -529,9 +584,20 @@ async def _run_models_for_text(
 
 
 @app.post("/auth/login", response_model=LoginResponse)
-async def login(request: LoginRequest):
-    """Authenticate user and return JWT token."""
-    user = authenticate_user(request.username, request.password)
+async def login(
+    request: LoginRequest,
+    x_lab_mode: Optional[str] = Header(None, alias="X-Lab-Mode")
+):
+    """
+    Authenticate user and return JWT token.
+    
+    Vulnerability #5 (SQL Injection): In Lab Mode, the authentication function uses
+    unsafe SQL query construction, making it vulnerable to SQL injection attacks.
+    """
+    # Determine Lab Mode using server-side gating (env var + header)
+    is_lab_mode = LAB_MODE_ENABLED and x_lab_mode and x_lab_mode.lower() in ("true", "1", "yes")
+    
+    user = authenticate_user(request.username, request.password, is_lab_mode=is_lab_mode)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
