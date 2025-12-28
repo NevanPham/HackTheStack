@@ -154,8 +154,20 @@ footer {
   font-family: "Georgia", serif;
 }
 
+/* Secure mode: white text and border on green navbar */
+:root:not([data-mode="lab"]) .logout-button {
+  border-color: white;
+  color: white;
+}
+
 .logout-button:hover {
   background-color: var(--accent-color);
+  color: white;
+}
+
+/* Secure mode hover: keep white text on green background */
+:root:not([data-mode="lab"]) .logout-button:hover {
+  background-color: rgba(255, 255, 255, 0.2);
   color: white;
 }
 
