@@ -32,7 +32,14 @@ function Login({ onLogin }) {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.detail || 'Login failed');
+        const errorMessage = errorData.detail || 'Login failed';
+        
+        // Handle rate limiting (429 Too Many Requests)
+        if (response.status === 429) {
+          throw new Error(errorMessage);
+        }
+        
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
@@ -123,21 +130,26 @@ function Login({ onLogin }) {
               disabled={loading}
             />
             <span className="toggle-text">
-              Test in Lab Mode (SQL Injection vulnerable)
+              Test in Lab Mode (SQL Injection & Weak Auth vulnerable)
             </span>
           </label>
           {testLabMode && (
             <div className="lab-mode-warning">
-              ⚠️ Lab Mode: Login uses unsafe SQL queries (SQL Injection vulnerable)
+              ⚠️ Lab Mode: Login has multiple vulnerabilities enabled
               <br />
-              <strong style={{ marginTop: '0.5rem', display: 'block' }}>Try these payloads:</strong>
+              <strong style={{ marginTop: '0.5rem', display: 'block' }}>Vulnerabilities:</strong>
+              <ul style={{ margin: '0.5rem 0', paddingLeft: '1.5rem' }}>
+                <li><strong>SQL Injection:</strong> Username/password fields vulnerable to SQL injection</li>
+                <li><strong>Weak Authentication:</strong> No rate limiting - unlimited failed login attempts allowed</li>
+              </ul>
+              <strong style={{ marginTop: '0.5rem', display: 'block' }}>SQL Injection payloads:</strong>
               <ul style={{ margin: '0.5rem 0', paddingLeft: '1.5rem' }}>
                 <li>Username: <code>nevan' OR '1'='1' --</code> | Password: <code>nevan</code> (username injection)</li>
                 <li>Username: <code>nevan</code> | Password: <code>' OR '1'='1' --</code> (password injection)</li>
                 <li>Username: <code>' OR '1'='1</code> | Password: <code>nevan</code> (returns first user)</li>
               </ul>
               <small style={{ marginTop: '0.5rem', display: 'block', fontStyle: 'italic' }}>
-                Check your backend terminal logs to see the vulnerable SQL query being executed!
+                In Secure Mode: After 3 failed attempts, login is disabled for 30 seconds. In Lab Mode, unlimited attempts are allowed.
               </small>
             </div>
           )}

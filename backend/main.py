@@ -18,7 +18,7 @@ from jose import JWTError, jwt
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from fastapi import FastAPI, HTTPException, status, Header
+from fastapi import FastAPI, HTTPException, status, Header, Request
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from pydantic import BaseModel
@@ -61,6 +61,15 @@ security = HTTPBearer()
 # CSRF token storage: in-memory dict mapping username -> csrf_token
 # In production, consider using Redis or database-backed storage
 csrf_tokens: Dict[str, str] = {}
+
+# Rate limiting storage: in-memory dict mapping identifier -> {"attempts": int, "lockout_until": float}
+# In production, consider using Redis or database-backed storage
+# Structure: {identifier: {"attempts": count, "lockout_until": timestamp}}
+failed_login_attempts: Dict[str, Dict[str, Any]] = {}
+
+# Rate limiting configuration
+MAX_LOGIN_ATTEMPTS = 3
+LOCKOUT_DURATION_SECONDS = 30
 
 
 def _init_db() -> None:
@@ -417,6 +426,89 @@ def validate_csrf_token(username: str, token: Optional[str]) -> bool:
     return tokens_match
 
 
+def get_client_identifier(request: Request, username: str) -> str:
+    """Get a unique identifier for rate limiting (IP address + username)."""
+    # Get client IP address
+    client_ip = request.client.host if request.client else "unknown"
+    # Use IP + username as identifier to prevent one user from blocking others
+    return f"{client_ip}:{username}"
+
+
+def check_rate_limit(identifier: str, is_lab_mode: bool) -> Optional[str]:
+    """
+    Check if the identifier is rate limited.
+    
+    Vulnerability #6 (Weak Authentication): In Lab Mode, rate limiting is bypassed,
+    allowing unlimited failed login attempts. This makes the application vulnerable
+    to brute force attacks.
+    
+    Args:
+        identifier: Unique identifier for rate limiting (IP:username)
+        is_lab_mode: If True, bypass rate limiting (Lab Mode)
+    
+    Returns:
+        Error message if rate limited, None otherwise
+    """
+    if is_lab_mode:
+        # Lab Mode: Rate limiting is bypassed (Vulnerability #6)
+        # This allows unlimited failed login attempts, making brute force attacks possible
+        return None
+    
+    # Secure Mode: Enforce rate limiting
+    current_time = time.time()
+    attempt_data = failed_login_attempts.get(identifier)
+    
+    if attempt_data:
+        lockout_until = attempt_data.get("lockout_until", 0)
+        
+        # Check if still locked out (only if lockout is actually set)
+        if lockout_until > 0 and current_time < lockout_until:
+            remaining_seconds = int(lockout_until - current_time) + 1
+            return f"Too many failed login attempts. Please try again in {remaining_seconds} seconds."
+        
+        # Lockout expired, reset attempts (only if lockout was actually set)
+        if lockout_until > 0 and current_time >= lockout_until:
+            failed_login_attempts[identifier] = {"attempts": 0, "lockout_until": 0}
+    
+    return None
+
+
+def record_failed_attempt(identifier: str, is_lab_mode: bool) -> None:
+    """
+    Record a failed login attempt.
+    
+    Args:
+        identifier: Unique identifier for rate limiting (IP:username)
+        is_lab_mode: If True, don't record attempts (Lab Mode)
+    """
+    if is_lab_mode:
+        # Lab Mode: Don't record failed attempts (Vulnerability #6)
+        return
+    
+    # Secure Mode: Record and enforce rate limiting
+    current_time = time.time()
+    
+    if identifier not in failed_login_attempts:
+        failed_login_attempts[identifier] = {"attempts": 0, "lockout_until": 0}
+    
+    attempt_data = failed_login_attempts[identifier]
+    attempt_data["attempts"] += 1
+    
+    # If max attempts reached, set lockout
+    if attempt_data["attempts"] >= MAX_LOGIN_ATTEMPTS:
+        attempt_data["lockout_until"] = current_time + LOCKOUT_DURATION_SECONDS
+        logger.warning(f"Rate limit triggered for {identifier}: {attempt_data['attempts']} attempts, locked until {attempt_data['lockout_until']}")
+    else:
+        logger.info(f"Failed login attempt {attempt_data['attempts']}/{MAX_LOGIN_ATTEMPTS} for {identifier}")
+
+
+def clear_failed_attempts(identifier: str) -> None:
+    """Clear failed login attempts for a successful login."""
+    if identifier in failed_login_attempts:
+        del failed_login_attempts[identifier]
+        logger.info(f"Cleared failed login attempts for {identifier}")
+
+
 def require_csrf_token(
     username: str,
     csrf_token: Optional[str],
@@ -586,6 +678,7 @@ async def _run_models_for_text(
 @app.post("/auth/login", response_model=LoginResponse)
 async def login(
     request: LoginRequest,
+    http_request: Request,
     x_lab_mode: Optional[str] = Header(None, alias="X-Lab-Mode")
 ):
     """
@@ -593,17 +686,37 @@ async def login(
     
     Vulnerability #5 (SQL Injection): In Lab Mode, the authentication function uses
     unsafe SQL query construction, making it vulnerable to SQL injection attacks.
+    
+    Vulnerability #6 (Weak Authentication): In Lab Mode, rate limiting is bypassed,
+    allowing unlimited failed login attempts and making brute force attacks possible.
     """
     # Determine Lab Mode using server-side gating (env var + header)
     is_lab_mode = LAB_MODE_ENABLED and x_lab_mode and x_lab_mode.lower() in ("true", "1", "yes")
     
+    # Get client identifier for rate limiting
+    identifier = get_client_identifier(http_request, request.username)
+    
+    # Check rate limit in Secure Mode (Vulnerability #6: bypassed in Lab Mode)
+    rate_limit_error = check_rate_limit(identifier, is_lab_mode)
+    if rate_limit_error:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=rate_limit_error,
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
     user = authenticate_user(request.username, request.password, is_lab_mode=is_lab_mode)
     if not user:
+        # Record failed attempt in Secure Mode (Vulnerability #6: not recorded in Lab Mode)
+        record_failed_attempt(identifier, is_lab_mode)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
+    
+    # Clear failed attempts on successful login
+    clear_failed_attempts(identifier)
     
     access_token_expires = timedelta(hours=ACCESS_TOKEN_EXPIRE_HOURS)
     access_token = create_access_token(
