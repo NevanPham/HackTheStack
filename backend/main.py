@@ -965,7 +965,7 @@ async def login(
 
 @app.get("/auth/session", response_model=SessionResponse)
 async def get_session(
-    credentials: HTTPAuthorizationCredentials = security
+    credentials: HTTPAuthorizationCredentials = Depends(security)
 ):
     """Get current session information from JWT token."""
     token = credentials.credentials

@@ -1,0 +1,192 @@
+.splash-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #020617; /* Lab mode near-black background */
+  background-image: 
+    radial-gradient(circle at 20% 50%, rgba(239, 68, 68, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 50%, rgba(248, 113, 113, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 50% 80%, rgba(239, 68, 68, 0.05) 0%, transparent 50%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+  animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.splash-content {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3rem;
+}
+
+.splash-title {
+  font-size: 5rem;
+  font-weight: 900;
+  color: #ef4444; /* Lab mode bright red accent */
+  margin: 0;
+  text-shadow: 
+    0 0 10px rgba(239, 68, 68, 0.5),
+    0 0 20px rgba(239, 68, 68, 0.3),
+    0 0 30px rgba(239, 68, 68, 0.2);
+  letter-spacing: 0.05em;
+  animation: titleGlow 2s ease-in-out infinite alternate;
+  font-family: "Asset", "Impact", "Arial Black", sans-serif;
+  transform: scaleY(1.2) translateY(-15px); /* Match hero-title style */
+  display: inline-block;
+}
+
+@keyframes titleGlow {
+  from {
+    text-shadow: 
+      0 0 10px rgba(239, 68, 68, 0.5),
+      0 0 20px rgba(239, 68, 68, 0.3),
+      0 0 30px rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+  }
+  to {
+    text-shadow: 
+      0 0 20px rgba(239, 68, 68, 0.8),
+      0 0 30px rgba(239, 68, 68, 0.5),
+      0 0 40px rgba(239, 68, 68, 0.3),
+      0 0 50px rgba(248, 113, 113, 0.2);
+    color: #f97373; /* Lighter red on glow */
+  }
+}
+
+.splash-lock {
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  padding: 1.5rem 2rem;
+  border-radius: 50px;
+  background: rgba(239, 68, 68, 0.1);
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(239, 68, 68, 0.3);
+  box-shadow: 
+    0 0 20px rgba(239, 68, 68, 0.2),
+    inset 0 0 20px rgba(239, 68, 68, 0.1);
+  min-width: fit-content;
+  width: auto;
+}
+
+.splash-lock:hover {
+  transform: scale(1.1);
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.6);
+  box-shadow: 
+    0 0 30px rgba(239, 68, 68, 0.4),
+    0 0 50px rgba(248, 113, 113, 0.2),
+    inset 0 0 30px rgba(239, 68, 68, 0.15);
+}
+
+.splash-lock.hovered {
+  animation: lockPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes lockPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.splash-lock.unlocking {
+  animation: unlockAnimation 0.5s ease-out forwards;
+}
+
+@keyframes unlockAnimation {
+  0% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2) rotate(180deg);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(0) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+.lock-icon {
+  color: #fee2e2; /* Lab mode soft red-tinted text */
+  filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.6));
+  transition: all 0.3s ease;
+}
+
+.splash-lock:hover .lock-icon {
+  color: #ef4444; /* Bright red accent */
+  filter: drop-shadow(0 0 20px rgba(239, 68, 68, 0.9));
+  transform: translateY(-2px);
+}
+
+.splash-hint {
+  color: #fca5a5; /* Lab mode muted red */
+  font-size: 0.85rem;
+  margin: 0;
+  padding: 0 0.5rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 400;
+  transition: color 0.3s ease;
+  font-family: "Milker", "Impact", "Arial Black", sans-serif;
+  white-space: nowrap;
+  overflow: visible;
+}
+
+.splash-lock:hover .splash-hint {
+  color: #fee2e2; /* Lab mode soft red-tinted text */
+  text-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .splash-title {
+    font-size: 2.5rem;
+  }
+  
+  .splash-lock {
+    transform: scale(0.9);
+  }
+  
+  .lock-icon {
+    width: 60px;
+    height: 60px;
+  }
+}
+
+/* Fade out animation when leaving */
+.splash-screen.fade-out {
+  animation: fadeOut 0.5s ease-out forwards;
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+

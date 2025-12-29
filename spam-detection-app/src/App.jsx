@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'r
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import Header from './components/Header'
 import Footer from './components/Footer'
+import SplashScreen from './components/SplashScreen'
 import Home from './pages/Home'
 import About from './pages/About'
 import SpamDetector from './pages/SpamDetector'
@@ -58,6 +59,12 @@ function AppContent({ labMode, onToggleLabMode, isAuthenticated, username, onLog
 }
 
 function App() {
+  const [showSplash, setShowSplash] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    // Check if user has already seen the splash screen in this session
+    return !sessionStorage.getItem('splashSeen');
+  });
+
   const [labMode, setLabMode] = useState(() => {
     if (typeof window === 'undefined') return false;
     return window.localStorage.getItem('labMode') === 'true';
@@ -322,20 +329,31 @@ function App() {
     return false;
   };
 
+  const handleUnlock = () => {
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('splashSeen', 'true');
+    }
+    setShowSplash(false);
+  };
+
   return (
     <QueryClientProvider client={queryClient}>
-      <Router>
-        <AppContent
-          labMode={labMode}
-          onToggleLabMode={handleToggleLabMode}
-          isAuthenticated={isAuthenticated}
-          username={username}
-          onLogin={handleLogin}
-          onLogout={handleLogout}
-          csrfToken={csrfToken}
-          onRefreshCsrf={handleRefreshCsrf}
-        />
-      </Router>
+      {showSplash ? (
+        <SplashScreen onUnlock={handleUnlock} />
+      ) : (
+        <Router>
+          <AppContent
+            labMode={labMode}
+            onToggleLabMode={handleToggleLabMode}
+            isAuthenticated={isAuthenticated}
+            username={username}
+            onLogin={handleLogin}
+            onLogout={handleLogout}
+            csrfToken={csrfToken}
+            onRefreshCsrf={handleRefreshCsrf}
+          />
+        </Router>
+      )}
     </QueryClientProvider>
   );
 }
