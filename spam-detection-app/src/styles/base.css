@@ -11,18 +11,18 @@
   --bg-color: #0a0f1e;              /* deep blue-black background */
   --bg-secondary: #0f172a;          /* secondary dark blue */
   --bg-panel: #111827;              /* panel background */
-  --text-color: #e5e7eb;            /* primary light gray text */
-  --text-secondary: #9ca3af;        /* secondary muted gray text */
+  --text-color: #f3f4f6;            /* brighter white text */
+  --text-secondary: #d1d5db;        /* brighter light gray text */
   --accent-color: #22d3ee;          /* neon cyan primary accent */
   --accent-color-hover: #06b6d4;     /* darker cyan hover */
   --accent-secondary: #3b82f6;       /* electric blue secondary */
-  --muted-text-color: #9ca3af;      /* muted gray for secondary text */
+  --muted-text-color: #d1d5db;      /* brighter muted gray for secondary text */
   --panel-bg: #111827;              /* dark panel background */
   --panel-border: #1e293b;          /* subtle blue-gray border */
   --navbar-bg: #0f172a;             /* dark blue navbar */
-  --nav-link-color: #e5e7eb;        /* light text for nav */
+  --nav-link-color: #f3f4f6;        /* brighter light text for nav */
   --footer-bg: #0a0f1e;             /* dark footer */
-  --footer-text-color: #9ca3af;      /* muted footer text */
+  --footer-text-color: #d1d5db;      /* brighter footer text */
   --error-bg: #1f2937;              /* dark error background */
   --error-text: #fca5a5;            /* muted red error text */
   --error-border: #ef4444;          /* red error border */
@@ -46,18 +46,18 @@
   --bg-color: #120808;              /* dark red-black */
   --bg-secondary: #1a0f0f;          /* secondary dark red */
   --bg-panel: #1f1414;              /* panel background */
-  --text-color: #e5e7eb;            /* off-white text (same as Secure Mode) */
-  --text-secondary: #9ca3af;        /* secondary muted gray */
+  --text-color: #f3f4f6;            /* brighter white text */
+  --text-secondary: #d1d5db;        /* brighter light gray text */
   --accent-color: #ef4444;          /* neon red primary accent */
   --accent-color-hover: #f43f5e;    /* crimson hover */
   --accent-secondary: #f97316;       /* muted orange/amber secondary */
-  --muted-text-color: #9ca3af;      /* muted gray for secondary text */
+  --muted-text-color: #d1d5db;      /* brighter muted gray for secondary text */
   --panel-bg: #1f1414;              /* dark red panel background */
   --panel-border: #3a1f1f;          /* subtle red-gray border */
   --navbar-bg: #1a0f0f;             /* dark red navbar */
-  --nav-link-color: #e5e7eb;        /* light text for nav */
+  --nav-link-color: #f3f4f6;        /* brighter light text for nav */
   --footer-bg: #120808;             /* dark red footer */
-  --footer-text-color: #9ca3af;     /* muted footer text */
+  --footer-text-color: #d1d5db;     /* brighter footer text */
   --error-bg: #1f1414;              /* dark error background */
   --error-text: #fca5a5;            /* muted red error text */
   --error-border: #ef4444;          /* red error border */

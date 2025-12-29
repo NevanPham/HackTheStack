@@ -189,7 +189,7 @@
 }
 
 :root:not([data-mode="lab"]) .model-card.selected .model-description {
-  color: #9ca3af;
+  color: #d1d5db;
 }
 
 /* Lab Mode - Dark red background when selected */
@@ -206,7 +206,7 @@
 }
 
 :root[data-mode="lab"] .model-card.selected .model-description {
-  color: #9ca3af;
+  color: #d1d5db;
 }
 
 .model-card:hover {
@@ -249,6 +249,11 @@
 
 /* Secure Mode - Keep dark text on white background */
 :root:not([data-mode="lab"]) .model-description {
+  color: #666;
+}
+
+/* Lab Mode - Keep dark text on white background */
+:root[data-mode="lab"] .model-description {
   color: #666;
 }
 

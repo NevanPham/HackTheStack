@@ -53,9 +53,14 @@
   transition: color 0.2s ease;
 }
 
-/* Secure Mode - Muted gray text */
+/* Secure Mode - Brighter muted gray text */
 :root:not([data-mode="lab"]) .section-intro p {
-  color: #9ca3af;
+  color: #d1d5db;
+}
+
+/* Lab Mode - Brighter muted gray text */
+:root[data-mode="lab"] .section-intro p {
+  color: #d1d5db;
 }
 
 /* Dataset Overview */
@@ -249,9 +254,14 @@
   transition: color 0.2s ease;
 }
 
-/* Secure Mode - Light gray description */
+/* Secure Mode - Brighter light gray description */
 :root:not([data-mode="lab"]) .section-description {
-  color: #9ca3af;
+  color: #d1d5db;
+}
+
+/* Lab Mode - Brighter light gray description */
+:root[data-mode="lab"] .section-description {
+  color: #d1d5db;
 }
 
 .chart-grid-vertical {
@@ -329,9 +339,14 @@
   transition: color 0.2s ease;
 }
 
-/* Secure Mode - Muted gray description */
+/* Secure Mode - Brighter muted gray description */
 :root:not([data-mode="lab"]) .chart-description {
-  color: #9ca3af;
+  color: #d1d5db;
+}
+
+/* Lab Mode - Brighter muted gray description */
+:root[data-mode="lab"] .chart-description {
+  color: #d1d5db;
 }
 
 /* Filter Buttons */

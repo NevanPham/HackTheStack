@@ -49,9 +49,14 @@
   transition: color 0.2s ease;
 }
 
-/* Secure Mode - Light gray text */
+/* Secure Mode - Brighter light gray text */
 :root:not([data-mode="lab"]) .about-description {
-  color: #9ca3af;
+  color: #d1d5db;
+}
+
+/* Lab Mode - Brighter light gray text */
+:root[data-mode="lab"] .about-description {
+  color: #d1d5db;
 }
 
 .cta-text {
@@ -127,9 +132,14 @@
   transition: color 0.2s ease;
 }
 
-/* Secure Mode - Light gray text */
+/* Secure Mode - Brighter white text */
 :root:not([data-mode="lab"]) .about-section p {
-  color: #e5e7eb;
+  color: #f3f4f6;
+}
+
+/* Lab Mode - Brighter white text */
+:root[data-mode="lab"] .about-section p {
+  color: #f3f4f6;
 }
 
 .about-section .feature-card p {
@@ -142,9 +152,14 @@
   transition: color 0.2s ease;
 }
 
-/* Secure Mode - Light gray text */
+/* Secure Mode - Brighter white text */
 :root:not([data-mode="lab"]) .about-twist {
-  color: #e5e7eb;
+  color: #f3f4f6;
+}
+
+/* Lab Mode - Brighter white text */
+:root[data-mode="lab"] .about-twist {
+  color: #f3f4f6;
 }
 
 /* Team Section */

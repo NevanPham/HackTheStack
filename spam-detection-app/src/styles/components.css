@@ -38,9 +38,9 @@
   transition: all 0.2s ease;
 }
 
-/* Secure Mode - Clean nav links with cyan hover */
+/* Secure Mode - Brighter nav links with cyan hover */
 :root:not([data-mode="lab"]) .nav-links a {
-  color: #e5e7eb;
+  color: #f3f4f6;
   text-shadow: none;
 }
 
@@ -57,9 +57,9 @@
   border-radius: 5px;
 }
 
-/* Lab Mode - Red nav links with red hover */
+/* Lab Mode - Brighter nav links with red hover */
 :root[data-mode="lab"] .nav-links a {
-  color: #e5e7eb;
+  color: #f3f4f6;
   text-shadow: none;
 }
 
@@ -98,14 +98,14 @@ footer {
 /* Secure Mode - Dark footer */
 :root:not([data-mode="lab"]) footer {
   background-color: #0a0f1e;
-  color: #9ca3af;
+  color: #d1d5db;
   border-top: 1px solid rgba(34, 211, 238, 0.1);
 }
 
 /* Lab Mode - Dark red footer */
 :root[data-mode="lab"] footer {
   background-color: #120808;
-  color: #9ca3af;
+  color: #d1d5db;
   border-top: 1px solid rgba(239, 68, 68, 0.1);
 }
 
@@ -260,9 +260,15 @@ footer {
   transition: color 0.2s ease;
 }
 
-/* Secure Mode - Light gray username */
+/* Secure Mode - Brighter white username */
 :root:not([data-mode="lab"]) .username {
-  color: #e5e7eb;
+  color: #f3f4f6;
+  font-family: "Courier New", monospace;
+}
+
+/* Lab Mode - Brighter white username */
+:root[data-mode="lab"] .username {
+  color: #f3f4f6;
   font-family: "Courier New", monospace;
 }
 

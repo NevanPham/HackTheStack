@@ -93,17 +93,17 @@
   transition: all 0.2s ease;
 }
 
-/* Secure Mode - Muted cyan subtitle */
+/* Secure Mode - Brighter muted cyan subtitle */
 :root:not([data-mode="lab"]) .hero-subtitle {
-  color: #9ca3af;
+  color: #d1d5db;
   font-family: "Courier New", monospace;
   letter-spacing: 0.05em;
   text-shadow: none;
 }
 
-/* Lab Mode - Muted gray subtitle */
+/* Lab Mode - Brighter muted gray subtitle */
 :root[data-mode="lab"] .hero-subtitle {
-  color: #9ca3af;
+  color: #d1d5db;
   font-family: "Courier New", monospace;
   letter-spacing: 0.05em;
   text-shadow: none;

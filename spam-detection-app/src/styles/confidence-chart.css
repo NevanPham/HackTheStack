@@ -295,6 +295,16 @@
   font-weight: 500;
 }
 
+/* Secure Mode - Brighter detail labels */
+:root:not([data-mode="lab"]) .detail-label {
+  color: #d1d5db;
+}
+
+/* Lab Mode - Brighter detail labels */
+:root[data-mode="lab"] .detail-label {
+  color: #d1d5db;
+}
+
 .detail-value {
   font-size: 13px;
   font-weight: 600;
