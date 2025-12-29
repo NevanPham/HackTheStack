@@ -50,6 +50,9 @@ function SpamDetector({ labMode = false, csrfToken = null, onRefreshCsrf = null 
   const [wordLimitError, setWordLimitError] = useState(false);
   const [saveMessage, setSaveMessage] = useState(null); // Enhanced success/error messages
   const [lastRequest, setLastRequest] = useState(null); // For request inspector
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [filePreview, setFilePreview] = useState('');
+  const [fileError, setFileError] = useState(null);
 
   // Generate or retrieve user_id from localStorage
   // If authenticated, use username; otherwise generate a random user_id
@@ -268,6 +271,149 @@ function SpamDetector({ labMode = false, csrfToken = null, onRefreshCsrf = null 
     } catch (err) {
       console.error('Failed to read clipboard:', err);
       alert('Unable to read clipboard. Please paste manually or grant clipboard permissions.');
+    }
+  };
+
+  const handleFileSelect = async (e) => {
+    const file = e.target.files[0];
+    if (!file) {
+      setSelectedFile(null);
+      setFilePreview('');
+      setFileError(null);
+      return;
+    }
+
+    // Validate file extension
+    if (!file.name.toLowerCase().endsWith('.txt')) {
+      setFileError('Only .txt files are allowed.');
+      setSelectedFile(null);
+      setFilePreview('');
+      e.target.value = ''; // Clear file input
+      return;
+    }
+
+    // Validate file size (100KB limit)
+    const MAX_FILE_SIZE = 100 * 1024; // 100KB
+    if (file.size > MAX_FILE_SIZE) {
+      setFileError(`File size exceeds 100KB limit. File size: ${(file.size / 1024).toFixed(2)}KB`);
+      setSelectedFile(null);
+      setFilePreview('');
+      e.target.value = ''; // Clear file input
+      return;
+    }
+
+    // Validate MIME type
+    if (file.type && file.type !== 'text/plain') {
+      setFileError(`Invalid file type. Expected text/plain, got: ${file.type}`);
+      setSelectedFile(null);
+      setFilePreview('');
+      e.target.value = ''; // Clear file input
+      return;
+    }
+
+    setFileError(null);
+    setSelectedFile(file);
+
+    // Read file preview (first 500 characters or first 10 lines)
+    try {
+      const text = await file.text();
+      // Show first 500 characters or first 10 lines, whichever is shorter
+      const lines = text.split('\n');
+      const previewLines = lines.slice(0, 10).join('\n');
+      const preview = previewLines.length > 500 ? previewLines.substring(0, 500) + '...' : previewLines;
+      setFilePreview(preview);
+    } catch (err) {
+      console.error('Error reading file:', err);
+      setFileError('Error reading file. Please ensure it is a valid UTF-8 text file.');
+      setSelectedFile(null);
+      setFilePreview('');
+      e.target.value = ''; // Clear file input
+    }
+  };
+
+  const handleAnalyzeFile = async () => {
+    if (!selectedFile) {
+      setFileError('Please select a file first.');
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    setResult(null);
+    setFileError(null);
+
+    try {
+      // Create FormData
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+      formData.append('models', JSON.stringify(selectedModels));
+
+      const response = await fetch('http://localhost:8000/upload/txt-analyze', {
+        method: 'POST',
+        headers: {
+          'X-Lab-Mode': labMode ? 'true' : 'false'
+        },
+        body: formData
+      });
+
+      console.log('Backend response status:', response.status);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        const errorMessage = errorData.detail || `API error: ${response.status}`;
+        throw new Error(errorMessage);
+      }
+
+      const data = await response.json();
+      console.log('Backend returned data:', data);
+
+      // Transform backend response to match frontend expectations (same as handleSubmit)
+      const predictions = {};
+      data.predictions.forEach(pred => {
+        if (pred.model_id === 'kmeans') {
+          console.log('K-Means prediction data:', {
+            user_point_2d: pred.user_point_2d,
+            cluster_id: pred.cluster_id,
+            has_point_2d: !!pred.user_point_2d
+          });
+        }
+        
+        predictions[pred.model_id] = {
+          spamProbability: pred.spam_probability,
+          prediction: pred.prediction,
+          confidence: pred.confidence,
+          processingTime: pred.processing_time_ms,
+          ...(pred.user_point_2d ? {
+            userPointX: pred.user_point_2d[0],
+            userPointY: pred.user_point_2d[1],
+            clusterId: pred.cluster_id,
+            clusterDistances: pred.cluster_distances
+          } : {}),
+          accuracy: pred.model_id === 'xgboost' ? 94 : pred.model_id === 'lstm' ? 90 : 78,
+          spamDetectionRate: pred.model_id === 'xgboost' ? 92 : pred.model_id === 'lstm' ? 87 : 75,
+          falseAlarmRate: pred.model_id === 'xgboost' ? 3 : pred.model_id === 'lstm' ? 5 : 12,
+          confidenceLevel: pred.confidence * 100
+        };
+      });
+
+      setPredictionData(predictions);
+
+      // Set result to show the analysis panel
+      // Note: For file uploads, we use a safe message instead of file content
+      // to ensure uploaded content is never rendered as HTML (even in Lab Mode)
+      setResult({
+        isEmpty: true,
+        models: selectedModels,
+        text: `[File: ${selectedFile.name}] Content analyzed successfully. See file preview above for content.`,
+        textStats: data.text_stats,
+        totalProcessingTime: data.total_processing_time_ms
+      });
+
+    } catch (err) {
+      console.error('File analysis error:', err);
+      setError(err.message || 'Failed to analyze file. Make sure the backend server is running on port 8000.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -678,6 +824,63 @@ function SpamDetector({ labMode = false, csrfToken = null, onRefreshCsrf = null 
             >
               PASTE TEXT
             </button>
+          </div>
+
+          {/* File Upload Section */}
+          <div className="file-upload-section" style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid #ddd' }}>
+            <h4 className="section-subtitle" style={{ marginBottom: '10px' }}>Or Upload a .txt File</h4>
+            <div className="file-input-wrapper">
+              <input
+                type="file"
+                accept=".txt"
+                onChange={handleFileSelect}
+                id="file-input"
+                style={{ display: 'none' }}
+              />
+              <label htmlFor="file-input" className="btn btn-secondary" style={{ cursor: 'pointer', display: 'inline-block' }}>
+                SELECT .TXT FILE
+              </label>
+              {selectedFile && (
+                <span style={{ marginLeft: '10px', color: '#27ae60', fontWeight: 'bold' }}>
+                  {selectedFile.name} ({(selectedFile.size / 1024).toFixed(2)}KB)
+                </span>
+              )}
+            </div>
+            
+            {fileError && (
+              <div style={{ color: '#e74c3c', marginTop: '10px', fontSize: '14px' }}>
+                {fileError}
+              </div>
+            )}
+
+            {filePreview && (
+              <div className="file-preview" style={{ 
+                marginTop: '15px', 
+                padding: '10px', 
+                backgroundColor: '#f8f9fa', 
+                border: '1px solid #ddd', 
+                borderRadius: '4px',
+                maxHeight: '150px',
+                overflow: 'auto',
+                fontSize: '13px',
+                whiteSpace: 'pre-wrap',
+                wordBreak: 'break-word'
+              }}>
+                <div style={{ fontWeight: 'bold', marginBottom: '5px', color: '#555' }}>File Preview (first 10 lines / 500 chars):</div>
+                <div style={{ color: '#333' }}>{filePreview}</div>
+              </div>
+            )}
+
+            {selectedFile && (
+              <button
+                className="btn btn-primary"
+                onClick={handleAnalyzeFile}
+                disabled={loading || selectedModels.length === 0}
+                style={{ marginTop: '15px', width: '100%' }}
+              >
+                {loading ? 'ANALYZING FILE...' : 'ANALYZE UPLOADED FILE'}
+              </button>
+            )}
           </div>
         </div>
 

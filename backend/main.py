@@ -22,7 +22,7 @@ import httpx
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from fastapi import FastAPI, HTTPException, status, Header, Request
+from fastapi import FastAPI, HTTPException, status, Header, Request, UploadFile, File, Form, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from pydantic import BaseModel
@@ -1141,6 +1141,178 @@ async def predict(
         text_to_analyze, model_ids
     )
 
+    return PredictionResponse(
+        predictions=predictions,
+        text_stats=text_stats,
+        total_processing_time_ms=round(total_time, 2),
+        url_metadata=url_metadata,
+    )
+
+
+@app.post("/upload/txt-analyze", response_model=PredictionResponse)
+async def analyze_txt_file(
+    file: UploadFile = File(...),
+    models: str = Form("[\"xgboost\"]"),  # JSON string from form data
+    x_lab_mode: Optional[str] = Header(None, alias="X-Lab-Mode")
+):
+    """
+    Analyze a .txt file for spam detection.
+    
+    Strict validation:
+    - Only .txt extension allowed
+    - MIME type must be text/plain
+    - Maximum file size: 100KB
+    - Content read as UTF-8 text
+    - File processed in memory and discarded (not stored)
+    
+    Returns the same prediction response as /predict endpoint.
+    """
+    # Validate file extension
+    if not file.filename:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="File must have a filename"
+        )
+    
+    filename_lower = file.filename.lower()
+    if not filename_lower.endswith('.txt'):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Only .txt files are allowed. Received: {file.filename}"
+        )
+    
+    # Validate MIME type
+    if file.content_type and file.content_type not in ('text/plain', 'text/plain; charset=utf-8'):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid file type. Expected text/plain, got: {file.content_type}"
+        )
+    
+    # Maximum file size: 100KB (100 * 1024 bytes)
+    MAX_FILE_SIZE = 100 * 1024  # 100KB
+    
+    # Read file content
+    try:
+        content = await file.read()
+        
+        # Check file size
+        if len(content) > MAX_FILE_SIZE:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"File size exceeds maximum limit of {MAX_FILE_SIZE // 1024}KB. File size: {len(content)} bytes"
+            )
+        
+        # Decode as UTF-8 text
+        try:
+            text_content = content.decode('utf-8')
+        except UnicodeDecodeError as e:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"File is not valid UTF-8 text: {str(e)}"
+            )
+        
+        # Validate text is not empty
+        if not text_content or not text_content.strip():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="File is empty or contains only whitespace"
+            )
+        
+        # Validate text length (same as regular predict endpoint)
+        if len(text_content) > 10000:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="File content exceeds maximum length of 10000 characters"
+            )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error reading uploaded file: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error processing file: {str(e)}"
+        )
+    
+    # Parse models from JSON string
+    try:
+        model_list = json.loads(models)
+        if not isinstance(model_list, list):
+            model_list = ["xgboost"]
+    except (json.JSONDecodeError, TypeError):
+        model_list = ["xgboost"]
+    
+    # Determine Lab Mode using server-side gating (env var + header)
+    is_lab_mode = LAB_MODE_ENABLED and x_lab_mode and x_lab_mode.lower() in ("true", "1", "yes")
+    
+    # Check if content is a URL and handle URL fetching (same logic as /predict)
+    url_metadata = None
+    text_to_analyze = text_content
+    
+    if _is_url(text_content):
+        url = text_content.strip()
+        
+        # Validate URL based on mode
+        if is_lab_mode:
+            # Lab Mode: Skip or relax validation (SSRF vulnerability)
+            try:
+                parsed = urlparse(url)
+                if parsed.scheme not in ("http", "https"):
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail=f"Only http and https schemes are allowed, got: {parsed.scheme}"
+                    )
+            except Exception as e:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Invalid URL format: {str(e)}"
+                )
+            
+            logger.warning(f"⚠️ Lab Mode SSRF: Fetching URL without strict validation: {url}")
+        else:
+            # Secure Mode: Strict validation to prevent SSRF
+            is_valid, error_msg = _validate_url_secure(url)
+            if not is_valid:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"URL validation failed: {error_msg}"
+                )
+        
+        # Fetch the URL
+        fetch_success, metadata, error_msg = await _fetch_url(url)
+        
+        if fetch_success and metadata:
+            url_metadata = URLMetadata(
+                url=url,
+                status_code=metadata.get("status_code"),
+                content_length=metadata.get("content_length"),
+                content_type=metadata.get("content_type"),
+                fetch_successful=True,
+                error_message=None
+            )
+            logger.info(f"Successfully fetched URL: {url} (status: {metadata.get('status_code')})")
+        else:
+            url_metadata = URLMetadata(
+                url=url,
+                status_code=None,
+                content_length=None,
+                content_type=None,
+                fetch_successful=False,
+                error_message=error_msg
+            )
+            logger.warning(f"Failed to fetch URL: {url} - {error_msg}")
+    
+    # Validate model IDs
+    model_ids = _validate_model_ids(model_list)
+    
+    # Run predictions using existing pipeline
+    predictions, text_stats, total_time = await _run_models_for_text(
+        text_to_analyze, model_ids
+    )
+    
+    # File is automatically discarded after this function returns
+    # (processed in memory, never stored)
+    
     return PredictionResponse(
         predictions=predictions,
         text_stats=text_stats,
