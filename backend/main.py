@@ -52,10 +52,8 @@ VALID_MODEL_IDS = ["xgboost", "lstm", "kmeans"]
 
 DB_PATH = project_root / "backend" / "db" / "analyses.db"
 
-# Lab Mode configuration (server-side master switch)
-# If set to false, Lab Mode is disabled regardless of client header (safety override)
-# If set to true (default), Lab Mode is controlled by X-Lab-Mode header from frontend
-LAB_MODE_ENABLED = os.getenv("LAB_MODE_ENABLED", "true").lower() in ("true", "1", "yes")
+# Import settings module for Lab Mode gating
+from backend.settings import get_settings, resolve_mode
 
 # JWT Configuration
 SECRET_KEY = os.getenv("JWT_SECRET_KEY", "hackthestack-secret-key-change-in-production")
@@ -227,13 +225,7 @@ async def lifespan(app: FastAPI):
         f"Loaded {sum(1 for m in models.values() if m is not None)}/3 models successfully"
     )
     
-    # Log Lab Mode configuration
-    if LAB_MODE_ENABLED:
-        print("⚠️  LAB MODE ALLOWED - IDOR vulnerability can be toggled via frontend")
-        logger.info("Lab Mode is allowed - Frontend can toggle IDOR vulnerability via X-Lab-Mode header")
-    else:
-        print("✓ Secure Mode Only - Lab Mode disabled (set LAB_MODE_ENABLED=true to enable)")
-        logger.info("Secure Mode Only - Lab Mode disabled by environment variable")
+    # Log Lab Mode configuration (already fixed above)
 
     yield
 
@@ -266,9 +258,9 @@ class DynamicCORSMiddleware(BaseHTTPMiddleware):
     trusted frontend origins.
     """
     async def dispatch(self, request: StarletteRequest, call_next):
-        # Check if Lab Mode is enabled via header
-        x_lab_mode = request.headers.get("X-Lab-Mode", "").lower()
-        is_lab_mode = LAB_MODE_ENABLED and x_lab_mode in ("true", "1", "yes")
+        # Resolve mode using centralized resolver
+        mode = resolve_mode(request)
+        is_lab_mode = (mode == "lab")
         
         # Handle preflight requests
         if request.method == "OPTIONS":
@@ -669,7 +661,7 @@ def get_client_identifier(request: Request, username: str) -> str:
     return f"{client_ip}:{username}"
 
 
-def check_rate_limit(identifier: str, is_lab_mode: bool) -> Optional[str]:
+def check_rate_limit(identifier: str, mode: str) -> Optional[str]:
     """
     Check if the identifier is rate limited.
     
@@ -679,12 +671,12 @@ def check_rate_limit(identifier: str, is_lab_mode: bool) -> Optional[str]:
     
     Args:
         identifier: Unique identifier for rate limiting (IP:username)
-        is_lab_mode: If True, bypass rate limiting (Lab Mode)
+        mode: "secure" or "lab"
     
     Returns:
         Error message if rate limited, None otherwise
     """
-    if is_lab_mode:
+    if mode == "lab":
         # Lab Mode: Rate limiting is bypassed (Vulnerability #6)
         # This allows unlimited failed login attempts, making brute force attacks possible
         return None
@@ -708,15 +700,15 @@ def check_rate_limit(identifier: str, is_lab_mode: bool) -> Optional[str]:
     return None
 
 
-def record_failed_attempt(identifier: str, is_lab_mode: bool) -> None:
+def record_failed_attempt(identifier: str, mode: str) -> None:
     """
     Record a failed login attempt.
     
     Args:
         identifier: Unique identifier for rate limiting (IP:username)
-        is_lab_mode: If True, don't record attempts (Lab Mode)
+        mode: "secure" or "lab"
     """
-    if is_lab_mode:
+    if mode == "lab":
         # Lab Mode: Don't record failed attempts (Vulnerability #6)
         return
     
@@ -747,7 +739,7 @@ def clear_failed_attempts(identifier: str) -> None:
 def require_csrf_token(
     username: str,
     csrf_token: Optional[str],
-    x_lab_mode: Optional[str],
+    request: Request,
     method: str
 ) -> None:
     """
@@ -760,17 +752,16 @@ def require_csrf_token(
     Args:
         username: The authenticated user's username
         csrf_token: The CSRF token from X-CSRF-Token header
-        x_lab_mode: The X-Lab-Mode header value
+        request: FastAPI Request object for mode resolution
         method: HTTP method (POST, PUT, PATCH, DELETE)
     
     Raises:
         HTTPException: If CSRF validation fails in Secure Mode
     """
-    # Determine Lab Mode using server-side gating (env var + header)
-    # This ensures the vulnerability is only active when explicitly enabled
-    is_lab_mode = LAB_MODE_ENABLED and x_lab_mode and x_lab_mode.lower() in ("true", "1", "yes")
+    # Resolve mode using centralized resolver
+    mode = resolve_mode(request)
     
-    if is_lab_mode:
+    if mode == "lab":
         # Lab Mode: CSRF protection is bypassed (Vulnerability #4)
         # State-changing requests succeed without CSRF token validation
         return
@@ -785,7 +776,7 @@ def require_csrf_token(
             )
 
 
-def authenticate_user(username: str, password: str, is_lab_mode: bool = False) -> Optional[Dict[str, Any]]:
+def authenticate_user(username: str, password: str, mode: str = "secure") -> Optional[Dict[str, Any]]:
     """
     Authenticate a user by username and password.
     
@@ -796,7 +787,7 @@ def authenticate_user(username: str, password: str, is_lab_mode: bool = False) -
     Args:
         username: The username to authenticate
         password: The password to verify
-        is_lab_mode: If True, use vulnerable SQL query construction (Lab Mode)
+        mode: "secure" or "lab"
     
     Returns:
         Dict with user id and username if authentication succeeds, None otherwise
@@ -805,7 +796,7 @@ def authenticate_user(username: str, password: str, is_lab_mode: bool = False) -
     try:
         cursor = conn.cursor()
         
-        if is_lab_mode:
+        if mode == "lab":
             # Lab Mode: Vulnerable SQL query with string interpolation for BOTH username and password
             # This allows SQL injection attacks through either parameter
             # Example exploits:
@@ -831,7 +822,7 @@ def authenticate_user(username: str, password: str, is_lab_mode: bool = False) -
         user_id, db_username, stored_password_hash = row
         logger.info(f"User found: {db_username} (ID: {user_id})")
         
-        if is_lab_mode:
+        if mode == "lab":
             # In Lab Mode, check if password contains SQL injection patterns
             # If so, bypass password verification (vulnerability demonstration)
             sql_injection_patterns = ["' OR", "'OR", "OR '1'='1", "OR 1=1", "OR '1'='1'", "--"]
@@ -914,7 +905,6 @@ async def _run_models_for_text(
 async def login(
     request: LoginRequest,
     http_request: Request,
-    x_lab_mode: Optional[str] = Header(None, alias="X-Lab-Mode")
 ):
     """
     Authenticate user and return JWT token.
@@ -925,14 +915,14 @@ async def login(
     Vulnerability #6 (Weak Authentication): In Lab Mode, rate limiting is bypassed,
     allowing unlimited failed login attempts and making brute force attacks possible.
     """
-    # Determine Lab Mode using server-side gating (env var + header)
-    is_lab_mode = LAB_MODE_ENABLED and x_lab_mode and x_lab_mode.lower() in ("true", "1", "yes")
+    # Resolve mode using centralized resolver
+    mode = resolve_mode(http_request)
     
     # Get client identifier for rate limiting
     identifier = get_client_identifier(http_request, request.username)
     
     # Check rate limit in Secure Mode (Vulnerability #6: bypassed in Lab Mode)
-    rate_limit_error = check_rate_limit(identifier, is_lab_mode)
+    rate_limit_error = check_rate_limit(identifier, mode)
     if rate_limit_error:
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
@@ -940,10 +930,10 @@ async def login(
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-    user = authenticate_user(request.username, request.password, is_lab_mode=is_lab_mode)
+    user = authenticate_user(request.username, request.password, mode=mode)
     if not user:
         # Record failed attempt in Secure Mode (Vulnerability #6: not recorded in Lab Mode)
-        record_failed_attempt(identifier, is_lab_mode)
+        record_failed_attempt(identifier, mode)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
@@ -1047,7 +1037,25 @@ async def check_lab_access(
     if username is None:
         return {"authenticated": False, "can_access_lab": False}
     
-    return {"authenticated": True, "can_access_lab": True, "username": username}
+    settings = get_settings()
+    return {"authenticated": True, "can_access_lab": settings["lab_available"], "username": username}
+
+
+@app.get("/api/mode")
+async def get_mode(request: Request):
+    """
+    Test-only introspection endpoint for mode resolution.
+    
+    Returns the current mode and lab availability status.
+    This endpoint is useful for testing and debugging mode resolution.
+    """
+    settings = get_settings()
+    mode = resolve_mode(request)
+    
+    return {
+        "mode": mode,
+        "lab_available": settings["lab_available"],
+    }
 
 
 @app.get("/")
@@ -1064,7 +1072,7 @@ async def root():
 
 @app.get("/models/info")
 async def get_model_info(
-    x_lab_mode: Optional[str] = Header(None, alias="X-Lab-Mode")
+    request: Request
 ):
     """
     Get information about all loaded models.
@@ -1073,7 +1081,8 @@ async def get_model_info(
     returns detailed model information including file paths and internal details.
     In Secure Mode, only basic status information is returned.
     """
-    is_lab_mode = LAB_MODE_ENABLED and x_lab_mode and x_lab_mode.lower() in ("true", "1", "yes")
+    mode = resolve_mode(request)
+    is_lab_mode = (mode == "lab")
     
     info = {}
 
@@ -1116,7 +1125,7 @@ async def get_model_info(
 
 @app.get("/debug/info")
 async def debug_info(
-    x_lab_mode: Optional[str] = Header(None, alias="X-Lab-Mode")
+    request: Request
 ):
     """
     Debug endpoint - only accessible in Lab Mode.
@@ -1125,9 +1134,9 @@ async def debug_info(
     application details including environment variables, file paths, and system
     information. In Secure Mode, this endpoint returns 403 Forbidden.
     """
-    is_lab_mode = LAB_MODE_ENABLED and x_lab_mode and x_lab_mode.lower() in ("true", "1", "yes")
+    mode = resolve_mode(request)
     
-    if not is_lab_mode:
+    if mode != "lab":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Debug endpoints are not available in Secure Mode"
@@ -1142,7 +1151,7 @@ async def debug_info(
             "python_version": sys.version,
         },
         "environment": {
-            "lab_mode_enabled": LAB_MODE_ENABLED,
+            "settings": get_settings(),
             "project_root": str(project_root),
             "db_path": str(DB_PATH),
             "jwt_secret_key_set": bool(SECRET_KEY and SECRET_KEY != "hackthestack-secret-key-change-in-production"),
@@ -1162,7 +1171,7 @@ async def debug_info(
 
 @app.get("/debug/health")
 async def debug_health(
-    x_lab_mode: Optional[str] = Header(None, alias="X-Lab-Mode")
+    request: Request
 ):
     """
     Detailed health check endpoint - only accessible in Lab Mode.
@@ -1171,9 +1180,9 @@ async def debug_health(
     system health information including database status, model loading status,
     and internal metrics. In Secure Mode, this endpoint returns 403 Forbidden.
     """
-    is_lab_mode = LAB_MODE_ENABLED and x_lab_mode and x_lab_mode.lower() in ("true", "1", "yes")
+    mode = resolve_mode(request)
     
-    if not is_lab_mode:
+    if mode != "lab":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Debug endpoints are not available in Secure Mode"
@@ -1199,7 +1208,7 @@ async def debug_health(
             for model_id, model in models.items()
         },
         "system": {
-            "lab_mode_enabled": LAB_MODE_ENABLED,
+            "settings": get_settings(),
             "csrf_tokens_count": len(csrf_tokens),
             "failed_login_attempts_count": len(failed_login_attempts),
         }
@@ -1216,9 +1225,9 @@ async def validation_exception_handler(request: Request, exc):
     include detailed validation errors, stack traces, and request body details.
     This leaks internal application structure and can aid attackers.
     """
-    # Check Lab Mode from header
-    x_lab_mode = request.headers.get("X-Lab-Mode", "").lower()
-    is_lab_mode = LAB_MODE_ENABLED and x_lab_mode in ("true", "1", "yes")
+    # Resolve mode using centralized resolver
+    mode = resolve_mode(request)
+    is_lab_mode = (mode == "lab")
     
     logger.error(f"Validation error: {exc}")
     
@@ -1258,9 +1267,9 @@ async def general_exception_handler(request: Request, exc):
     include stack traces, file paths, and internal exception details. This leaks
     sensitive information about the application structure and can aid attackers.
     """
-    # Check Lab Mode from header
-    x_lab_mode = request.headers.get("X-Lab-Mode", "").lower()
-    is_lab_mode = LAB_MODE_ENABLED and x_lab_mode in ("true", "1", "yes")
+    # Resolve mode using centralized resolver
+    mode = resolve_mode(request)
+    is_lab_mode = (mode == "lab")
     
     logger.error(f"Unhandled exception: {str(exc)}", exc_info=True)
     
@@ -1296,7 +1305,7 @@ async def general_exception_handler(request: Request, exc):
 @app.post("/predict", response_model=PredictionResponse)
 async def predict(
     request: PredictionRequest,
-    x_lab_mode: Optional[str] = Header(None, alias="X-Lab-Mode")
+    http_request: Request
 ):
     """
     Predict spam probability using selected models.
@@ -1325,8 +1334,9 @@ async def predict(
             detail="Text exceeds maximum length of 10000 characters",
         )
 
-    # Determine Lab Mode using server-side gating (env var + header)
-    is_lab_mode = LAB_MODE_ENABLED and x_lab_mode and x_lab_mode.lower() in ("true", "1", "yes")
+    # Resolve mode using centralized resolver
+    mode = resolve_mode(http_request)
+    is_lab_mode = (mode == "lab")
 
     # Check if input is a URL and handle URL fetching
     url_metadata = None
@@ -1406,7 +1416,7 @@ async def predict(
 async def analyze_txt_file(
     file: UploadFile = File(...),
     models: str = Form("[\"xgboost\"]"),  # JSON string from form data
-    x_lab_mode: Optional[str] = Header(None, alias="X-Lab-Mode")
+    http_request: Request
 ):
     """
     Analyze a .txt file for spam detection.
@@ -1431,8 +1441,9 @@ async def analyze_txt_file(
     
     Returns the same prediction response as /predict endpoint.
     """
-    # Determine Lab Mode using server-side gating (env var + header)
-    is_lab_mode = LAB_MODE_ENABLED and x_lab_mode and x_lab_mode.lower() in ("true", "1", "yes")
+    # Resolve mode using centralized resolver
+    mode = resolve_mode(http_request)
+    is_lab_mode = (mode == "lab")
     
     # Validate file extension (required in both modes)
     if not file.filename:
@@ -1720,8 +1731,8 @@ async def predict_batch(request: BatchPredictionRequest):
 @app.post("/analysis/save", response_model=SavedAnalysisDetail)
 async def save_analysis(
     request: SaveAnalysisRequest,
+    http_request: Request,
     x_user_id: Optional[str] = Header(None, alias="X-User-Id"),
-    x_lab_mode: Optional[str] = Header(None, alias="X-Lab-Mode"),
     x_csrf_token: Optional[str] = Header(None, alias="X-CSRF-Token"),
     authorization: Optional[str] = Header(None)
 ):
@@ -1748,8 +1759,8 @@ async def save_analysis(
     
     # Validate CSRF token in Secure Mode
     if username:
-        logger.info(f"CSRF Debug: Validating CSRF for user '{username}', token present: {bool(x_csrf_token)}, lab_mode: {x_lab_mode}")
-        require_csrf_token(username, x_csrf_token, x_lab_mode, "POST")
+        logger.info(f"CSRF Debug: Validating CSRF for user '{username}', token present: {bool(x_csrf_token)}")
+        require_csrf_token(username, x_csrf_token, http_request, "POST")
     else:
         logger.warning("CSRF Debug: No username extracted, skipping CSRF validation")
     
@@ -1798,11 +1809,11 @@ async def save_analysis(
             detail="Failed to save analysis",
         )
 
-    # Check if Lab Mode is enabled (env var must allow it AND header must request it)
-    is_lab_mode = LAB_MODE_ENABLED and x_lab_mode and x_lab_mode.lower() in ("true", "1", "yes")
+    # Resolve mode using centralized resolver
+    mode = resolve_mode(http_request)
     
     # Include user_id in Lab Mode to make IDOR vulnerability visible
-    user_id = row["user_id"] if is_lab_mode else None
+    user_id = row["user_id"] if mode == "lab" else None
 
     return SavedAnalysisDetail(
         id=row["id"],
@@ -1818,8 +1829,8 @@ async def save_analysis(
 
 @app.get("/analysis/list", response_model=List[SavedAnalysisSummary])
 async def list_analyses(
-    x_user_id: Optional[str] = Header(None, alias="X-User-Id"),
-    x_lab_mode: Optional[str] = Header(None, alias="X-Lab-Mode")
+    request: Request,
+    x_user_id: Optional[str] = Header(None, alias="X-User-Id")
 ):
     """Return a list of saved analyses with minimal fields for history view."""
     # Require user_id header
@@ -1829,15 +1840,15 @@ async def list_analyses(
             detail="X-User-Id header is required",
         )
     
-    # Check if Lab Mode is enabled (env var must allow it AND header must request it)
-    is_lab_mode = LAB_MODE_ENABLED and x_lab_mode and x_lab_mode.lower() in ("true", "1", "yes")
+    # Resolve mode using centralized resolver
+    mode = resolve_mode(request)
     
     conn = _get_db_connection()
     try:
         cursor = conn.cursor()
         # In Lab Mode: show all analyses (IDOR vulnerability)
         # In Secure Mode: only show analyses owned by the user
-        if is_lab_mode:
+        if mode == "lab":
             cursor.execute(
                 """
                 SELECT id, message_text, created_at, user_id
@@ -1864,7 +1875,8 @@ async def list_analyses(
         message_text = row["message_text"] or ""
         snippet = message_text[:50]
         # Include user_id in Lab Mode to make IDOR vulnerability visible
-        user_id = row["user_id"] if "user_id" in row.keys() and LAB_MODE_ENABLED else None
+        settings = get_settings()
+        user_id = row["user_id"] if "user_id" in row.keys() and settings["lab_available"] else None
         summaries.append(
             SavedAnalysisSummary(
                 id=row["id"],
@@ -1880,8 +1892,8 @@ async def list_analyses(
 @app.get("/analysis/{analysis_id}", response_model=SavedAnalysisDetail)
 async def get_analysis(
     analysis_id: int,
-    x_user_id: Optional[str] = Header(None, alias="X-User-Id"),
-    x_lab_mode: Optional[str] = Header(None, alias="X-Lab-Mode")
+    request: Request,
+    x_user_id: Optional[str] = Header(None, alias="X-User-Id")
 ):
     """Return full details for a single saved analysis."""
     # Require user_id header
@@ -1891,8 +1903,8 @@ async def get_analysis(
             detail="X-User-Id header is required",
         )
     
-    # Check if Lab Mode is enabled (env var must allow it AND header must request it)
-    is_lab_mode = LAB_MODE_ENABLED and x_lab_mode and x_lab_mode.lower() in ("true", "1", "yes")
+    # Resolve mode using centralized resolver
+    mode = resolve_mode(request)
     
     conn = _get_db_connection()
     try:
@@ -1917,14 +1929,14 @@ async def get_analysis(
     
     # IDOR Vulnerability: In Lab Mode, bypass ownership check
     # Secure Mode: Enforce ownership - return 403 if analysis belongs to another user
-    if not is_lab_mode and row["user_id"] != x_user_id:
+    if mode != "lab" and row["user_id"] != x_user_id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=f"Access denied to analysis {analysis_id}",
         )
 
     # Include user_id in Lab Mode to make IDOR vulnerability visible
-    user_id = row["user_id"] if is_lab_mode else None
+    user_id = row["user_id"] if mode == "lab" else None
     
     return SavedAnalysisDetail(
         id=row["id"],

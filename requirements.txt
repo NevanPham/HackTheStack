@@ -15,6 +15,7 @@ bcrypt
 python-jose[cryptography]
 python-multipart
 httpx
+pytest
 # ---------------------------------------------
 # Frontend (React) dependencies - for reference
 # Note: These are JavaScript packages; install with npm/yarn, not pip.
