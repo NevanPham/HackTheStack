@@ -6,6 +6,9 @@ import sqlite3
 import os
 from datetime import datetime, timedelta
 from secrets import token_urlsafe
+import socket
+import ipaddress
+from urllib.parse import urlparse
 
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -13,6 +16,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 import logging
 import bcrypt
 from jose import JWTError, jwt
+import httpx
 
 # Add project root to Python path
 project_root = Path(__file__).parent.parent
@@ -323,10 +327,20 @@ class ModelPrediction(BaseModel):
     user_point_2d: Optional[List[float]] = None
 
 
+class URLMetadata(BaseModel):
+    url: str
+    status_code: Optional[int] = None
+    content_length: Optional[int] = None
+    content_type: Optional[str] = None
+    fetch_successful: bool
+    error_message: Optional[str] = None
+
+
 class PredictionResponse(BaseModel):
     predictions: List[ModelPrediction]
     text_stats: Dict[str, Any]
     total_processing_time_ms: float
+    url_metadata: Optional[URLMetadata] = None
 
 
 class BatchPredictionItem(BaseModel):
@@ -376,6 +390,156 @@ def _compute_text_stats(text: str) -> Dict[str, Any]:
         "sentence_count": max(1, text.count(".") + text.count("!") + text.count("?")),
         "avg_word_length": round(np.mean([len(w) for w in words]) if words else 0, 2),
     }
+
+
+def _is_url(text: str) -> bool:
+    """
+    Detect if the input text is a URL.
+    
+    Args:
+        text: Input text to check
+        
+    Returns:
+        True if text appears to be a URL, False otherwise
+    """
+    text = text.strip()
+    if not text:
+        return False
+    
+    # Check if it starts with http:// or https://
+    if text.startswith(("http://", "https://")):
+        try:
+            parsed = urlparse(text)
+            # Basic validation: must have scheme and netloc
+            return bool(parsed.scheme and parsed.netloc)
+        except Exception:
+            return False
+    
+    return False
+
+
+def _is_private_ip(ip: str) -> bool:
+    """
+    Check if an IP address is in a private, loopback, or link-local range.
+    
+    Args:
+        ip: IP address string
+        
+    Returns:
+        True if IP is private/loopback/link-local, False otherwise
+    """
+    try:
+        ip_obj = ipaddress.ip_address(ip)
+        return (
+            ip_obj.is_loopback
+            or ip_obj.is_private
+            or ip_obj.is_link_local
+            or ip_obj.is_reserved
+            or ip_obj.is_multicast
+        )
+    except ValueError:
+        return False
+
+
+def _validate_url_secure(url: str) -> Tuple[bool, Optional[str]]:
+    """
+    Validate URL for Secure Mode: strict validation to prevent SSRF.
+    
+    Vulnerability #7 (SSRF): In Lab Mode, URL validation is relaxed, allowing
+    requests to internal/private IP addresses. This makes the application vulnerable
+    to Server-Side Request Forgery attacks.
+    
+    Args:
+        url: URL string to validate
+        
+    Returns:
+        Tuple of (is_valid, error_message)
+    """
+    try:
+        parsed = urlparse(url)
+        
+        # Only allow http and https schemes
+        if parsed.scheme not in ("http", "https"):
+            return False, f"Only http and https schemes are allowed, got: {parsed.scheme}"
+        
+        # Must have a netloc (hostname)
+        if not parsed.netloc:
+            return False, "URL must have a valid hostname"
+        
+        # Extract hostname (remove port if present)
+        hostname = parsed.netloc.split(":")[0]
+        
+        # Block common internal hostnames
+        blocked_hostnames = [
+            "localhost",
+            "127.0.0.1",
+            "0.0.0.0",
+            "::1",
+            "localhost.localdomain",
+        ]
+        if hostname.lower() in blocked_hostnames:
+            return False, f"Access to internal hostname '{hostname}' is not allowed"
+        
+        # Resolve DNS and check IP address
+        try:
+            # Get all IP addresses for the hostname
+            ip_addresses = socket.getaddrinfo(hostname, None, socket.AF_UNSPEC, socket.SOCK_STREAM)
+            for addr_info in ip_addresses:
+                ip = addr_info[4][0]  # Extract IP from (host, port) tuple
+                
+                # Check if IP is private/loopback/link-local
+                if _is_private_ip(ip):
+                    return False, f"Access to private/internal IP address '{ip}' (resolved from '{hostname}') is not allowed"
+        except socket.gaierror:
+            return False, f"Failed to resolve hostname '{hostname}'"
+        except Exception as e:
+            return False, f"Error validating hostname: {str(e)}"
+        
+        return True, None
+        
+    except Exception as e:
+        return False, f"Invalid URL format: {str(e)}"
+
+
+async def _fetch_url(url: str, timeout: float = 5.0) -> Tuple[bool, Optional[Dict[str, Any]], Optional[str]]:
+    """
+    Fetch content from a URL with timeout and error handling.
+    
+    Args:
+        url: URL to fetch
+        timeout: Request timeout in seconds
+        
+    Returns:
+        Tuple of (success, metadata_dict, error_message)
+    """
+    try:
+        async with httpx.AsyncClient(timeout=timeout, follow_redirects=True) as client:
+            response = await client.get(url)
+            
+            # Get content length (may be None for streaming responses)
+            content_length = None
+            if "content-length" in response.headers:
+                try:
+                    content_length = int(response.headers["content-length"])
+                except ValueError:
+                    pass
+            
+            metadata = {
+                "status_code": response.status_code,
+                "content_length": content_length,
+                "content_type": response.headers.get("content-type"),
+                "fetch_successful": True,
+                "error_message": None,
+            }
+            
+            return True, metadata, None
+            
+    except httpx.TimeoutException:
+        return False, None, "Request timed out"
+    except httpx.RequestError as e:
+        return False, None, f"Request failed: {str(e)}"
+    except Exception as e:
+        return False, None, f"Unexpected error: {str(e)}"
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
@@ -877,11 +1041,21 @@ async def general_exception_handler(request, exc):
 
 # Enhance predict endpoint with validation
 @app.post("/predict", response_model=PredictionResponse)
-async def predict(request: PredictionRequest):
+async def predict(
+    request: PredictionRequest,
+    x_lab_mode: Optional[str] = Header(None, alias="X-Lab-Mode")
+):
     """
-    Predict spam probability using selected models
+    Predict spam probability using selected models.
+    
+    If the input text is detected as a URL, the backend will fetch the URL content
+    for analysis. URL validation is enforced in Secure Mode to prevent SSRF attacks.
+    
+    Vulnerability #7 (SSRF): In Lab Mode, URL validation is relaxed, allowing
+    requests to internal/private IP addresses. This makes the application vulnerable
+    to Server-Side Request Forgery attacks.
 
-    - **text**: The message text to analyze
+    - **text**: The message text to analyze (or a URL to fetch)
     - **models**: List of model IDs to use (xgboost, lstm, kmeans)
     """
     start_time = time.time()
@@ -898,16 +1072,80 @@ async def predict(request: PredictionRequest):
             detail="Text exceeds maximum length of 10000 characters",
         )
 
+    # Determine Lab Mode using server-side gating (env var + header)
+    is_lab_mode = LAB_MODE_ENABLED and x_lab_mode and x_lab_mode.lower() in ("true", "1", "yes")
+
+    # Check if input is a URL and handle URL fetching
+    url_metadata = None
+    text_to_analyze = request.text
+    
+    if _is_url(request.text):
+        url = request.text.strip()
+        
+        # Validate URL based on mode
+        if is_lab_mode:
+            # Lab Mode: Skip or relax validation (SSRF vulnerability)
+            # Only basic scheme check, allow all destinations
+            try:
+                parsed = urlparse(url)
+                if parsed.scheme not in ("http", "https"):
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail=f"Only http and https schemes are allowed, got: {parsed.scheme}"
+                    )
+            except Exception as e:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Invalid URL format: {str(e)}"
+                )
+            
+            logger.warning(f"⚠️ Lab Mode SSRF: Fetching URL without strict validation: {url}")
+        else:
+            # Secure Mode: Strict validation to prevent SSRF
+            is_valid, error_msg = _validate_url_secure(url)
+            if not is_valid:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"URL validation failed: {error_msg}"
+                )
+        
+        # Fetch the URL
+        fetch_success, metadata, error_msg = await _fetch_url(url)
+        
+        if fetch_success and metadata:
+            url_metadata = URLMetadata(
+                url=url,
+                status_code=metadata.get("status_code"),
+                content_length=metadata.get("content_length"),
+                content_type=metadata.get("content_type"),
+                fetch_successful=True,
+                error_message=None
+            )
+            # Use URL metadata in analysis (e.g., status code, content length)
+            # The original URL text is still analyzed by the models
+            logger.info(f"Successfully fetched URL: {url} (status: {metadata.get('status_code')})")
+        else:
+            url_metadata = URLMetadata(
+                url=url,
+                status_code=None,
+                content_length=None,
+                content_type=None,
+                fetch_successful=False,
+                error_message=error_msg
+            )
+            logger.warning(f"Failed to fetch URL: {url} - {error_msg}")
+
     model_ids = _validate_model_ids(request.models)
 
     predictions, text_stats, total_time = await _run_models_for_text(
-        request.text, model_ids
+        text_to_analyze, model_ids
     )
 
     return PredictionResponse(
         predictions=predictions,
         text_stats=text_stats,
         total_processing_time_ms=round(total_time, 2),
+        url_metadata=url_metadata,
     )
 
 
