@@ -87,12 +87,12 @@
   box-shadow: 0 0 0 2px rgba(139, 0, 0, 0.1);
 }
 
-/* Secure Mode - Cyan focus outline */
+/* Secure Mode - Keep white background, cyan focus outline */
 :root:not([data-mode="lab"]) .email-body {
-  background-color: #0f172a;
-  border: 1px solid #1e293b;
-  color: #e5e7eb;
-  font-family: "Courier New", monospace;
+  background-color: white;
+  border: 1px solid #ddd;
+  color: #333;
+  font-family: "Georgia", serif;
 }
 
 :root:not([data-mode="lab"]) .email-body:focus {
@@ -164,10 +164,21 @@
   box-shadow: 0 4px 12px rgba(34, 211, 238, 0.2);
 }
 
+/* Secure Mode - Blue-black background when selected */
 :root:not([data-mode="lab"]) .model-card.selected {
   border-color: #22d3ee;
-  background-color: rgba(34, 211, 238, 0.05);
-  box-shadow: 0 0 0 2px rgba(34, 211, 238, 0.2);
+  background-color: #111827;
+  box-shadow: 
+    0 0 0 2px rgba(34, 211, 238, 0.3),
+    0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+:root:not([data-mode="lab"]) .model-card.selected .model-name {
+  color: #22d3ee;
+}
+
+:root:not([data-mode="lab"]) .model-card.selected .model-description {
+  color: #9ca3af;
 }
 
 .model-card:hover {
@@ -512,6 +523,23 @@
   border: 1px solid #e0e0e0;
   padding: 1rem 1.25rem;
   min-height: 200px;
+  transition: all 0.2s ease;
+}
+
+/* Secure Mode - Keep white background for saved analyses */
+:root:not([data-mode="lab"]) .saved-analyses-detail {
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+}
+
+:root:not([data-mode="lab"]) .saved-analyses-list {
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+}
+
+:root:not([data-mode="lab"]) .saved-analysis-item {
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
 }
 
 .saved-analysis-detail-card h4 {
@@ -526,36 +554,36 @@
 }
 
 .saved-analyses-section--secure .saved-analyses-list {
-  background: #111827;
-  border: 1px solid #1e293b;
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
 }
 
 .saved-analyses-section--secure .saved-analysis-item {
-  border: 1px solid #1e293b;
-  background-color: #0f172a;
-  color: #e5e7eb;
+  border: 1px solid #e0e0e0;
+  background-color: #ffffff;
+  color: #333;
 }
 
 .saved-analyses-section--secure .saved-analysis-item:hover {
-  background: rgba(34, 211, 238, 0.1);
-  border-color: rgba(34, 211, 238, 0.3);
-  box-shadow: 0 0 10px rgba(34, 211, 238, 0.2);
+  background: #f9f9f9;
+  border-color: #22d3ee;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 .saved-analyses-section--secure .saved-analysis-item--active {
-  background: rgba(34, 211, 238, 0.15);
+  background: #f0f0f0;
   border-color: #22d3ee;
-  color: #22d3ee;
-  box-shadow: 0 0 15px rgba(34, 211, 238, 0.3);
+  color: #333;
+  box-shadow: 0 2px 8px rgba(34, 211, 238, 0.2);
 }
 
 .saved-analyses-section--secure .saved-analysis-item--active .saved-analysis-snippet,
 .saved-analyses-section--secure .saved-analysis-item--active .saved-analysis-timestamp {
-  color: #22d3ee;
+  color: #333;
 }
 
 .saved-analyses-section--secure .saved-analysis-timestamp {
-  color: #9ca3af;
+  color: #666;
 }
 
 .saved-analyses-section--secure .saved-analysis-detail-card h4 {
