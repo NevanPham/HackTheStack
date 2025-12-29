@@ -1096,48 +1096,30 @@ function SpamDetector({ labMode = false, csrfToken = null, onRefreshCsrf = null 
                       <div className="saved-analyses-layout">
                         <div className="saved-analyses-list">
                           {/* Search and Sort Controls */}
-                          <div style={{ marginBottom: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                          <div className="saved-analyses-controls">
+                            <div className="saved-analyses-search-wrapper">
                               <input
                                 type="text"
                                 placeholder="Search analyses..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                style={{
-                                  flex: 1,
-                                  padding: '0.5rem',
-                                  border: '1px solid #ddd',
-                                  borderRadius: '4px',
-                                  fontSize: '14px'
-                                }}
+                                className="saved-analyses-search-input"
                               />
                               <button
                                 type="button"
                                 onClick={() => setSearchQuery('')}
-                                style={{
-                                  padding: '0.5rem 1rem',
-                                  border: '1px solid #ddd',
-                                  borderRadius: '4px',
-                                  background: '#f8f9fa',
-                                  cursor: 'pointer',
-                                  fontSize: '14px'
-                                }}
+                                className="saved-analyses-clear-button"
                                 disabled={!searchQuery}
                               >
                                 Clear
                               </button>
                             </div>
-                            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                              <label style={{ fontSize: '14px', fontWeight: '500' }}>Sort by:</label>
+                            <div className="saved-analyses-sort-wrapper">
+                              <label className="saved-analyses-sort-label">Sort by:</label>
                               <select
                                 value={sortBy}
                                 onChange={(e) => setSortBy(e.target.value)}
-                                style={{
-                                  padding: '0.4rem',
-                                  border: '1px solid #ddd',
-                                  borderRadius: '4px',
-                                  fontSize: '14px'
-                                }}
+                                className="saved-analyses-sort-select"
                               >
                                 <option value="created_at">Date</option>
                                 <option value="id">ID</option>
@@ -1145,12 +1127,7 @@ function SpamDetector({ labMode = false, csrfToken = null, onRefreshCsrf = null 
                               <select
                                 value={sortOrder}
                                 onChange={(e) => setSortOrder(e.target.value)}
-                                style={{
-                                  padding: '0.4rem',
-                                  border: '1px solid #ddd',
-                                  borderRadius: '4px',
-                                  fontSize: '14px'
-                                }}
+                                className="saved-analyses-sort-select"
                               >
                                 <option value="desc">Newest First</option>
                                 <option value="asc">Oldest First</option>
