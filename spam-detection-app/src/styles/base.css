@@ -7,22 +7,38 @@
 
 /* Theme variables */
 :root {
-  /* Secure (default) - green theme */
-  --bg-color: #f0fdf4;              /* light green background */
-  --text-color: #052e16;            /* deep green text */
-  --accent-color: #16a34a;          /* primary green */
-  --accent-color-hover: #22c55e;    /* lighter green hover */
-  --muted-text-color: #166534;      /* muted green for secondary text */
-  --panel-bg: #dcfce7;              /* soft green panels */
-  --panel-border: #86efac;          /* green border */
-  --navbar-bg: #16a34a;
-  --nav-link-color: #ecfdf3;
-  --footer-bg: #15803d;
-  --footer-text-color: #ecfdf3;
-  --error-bg: #fef2f2;
-  --error-text: #7f1d1d;
-  --error-border: #fecaca;
-  --glow-color: rgba(34, 197, 94, 0.7);
+  /* Secure (default) - blue/cyan cyber-tech theme */
+  --bg-color: #0a0f1e;              /* deep blue-black background */
+  --bg-secondary: #0f172a;          /* secondary dark blue */
+  --bg-panel: #111827;              /* panel background */
+  --text-color: #e5e7eb;            /* primary light gray text */
+  --text-secondary: #9ca3af;        /* secondary muted gray text */
+  --accent-color: #22d3ee;          /* neon cyan primary accent */
+  --accent-color-hover: #06b6d4;     /* darker cyan hover */
+  --accent-secondary: #3b82f6;       /* electric blue secondary */
+  --muted-text-color: #9ca3af;      /* muted gray for secondary text */
+  --panel-bg: #111827;              /* dark panel background */
+  --panel-border: #1e293b;          /* subtle blue-gray border */
+  --navbar-bg: #0f172a;             /* dark blue navbar */
+  --nav-link-color: #e5e7eb;        /* light text for nav */
+  --footer-bg: #0a0f1e;             /* dark footer */
+  --footer-text-color: #9ca3af;      /* muted footer text */
+  --error-bg: #1f2937;              /* dark error background */
+  --error-text: #fca5a5;            /* muted red error text */
+  --error-border: #ef4444;          /* red error border */
+  --glow-color: rgba(34, 211, 238, 0.7);
+  /* Enhanced glow variables for secure mode - cyan/blue */
+  --glow-soft: rgba(34, 211, 238, 0.3);
+  --glow-medium: rgba(34, 211, 238, 0.5);
+  --glow-strong: rgba(34, 211, 238, 0.7);
+  --glow-intense: rgba(34, 211, 238, 0.9);
+  --glow-shadow-soft: 0 0 10px rgba(34, 211, 238, 0.2);
+  --glow-shadow-medium: 0 0 20px rgba(34, 211, 238, 0.4);
+  --glow-shadow-strong: 0 0 30px rgba(34, 211, 238, 0.6);
+  --glow-shadow-intense: 0 0 40px rgba(34, 211, 238, 0.8), 0 0 60px rgba(34, 211, 238, 0.4);
+  --text-glow-soft: 0 0 5px rgba(34, 211, 238, 0.4);
+  --text-glow-medium: 0 0 10px rgba(34, 211, 238, 0.6), 0 0 20px rgba(34, 211, 238, 0.3);
+  --text-glow-strong: 0 0 15px rgba(34, 211, 238, 0.8), 0 0 30px rgba(34, 211, 238, 0.5), 0 0 45px rgba(34, 211, 238, 0.3);
 }
 
 :root[data-mode="lab"] {
@@ -101,11 +117,26 @@ body {
   backdrop-filter: blur(6px);
   flex-shrink: 0; /* Prevent shrinking */
   transition:
-    background-color 0.25s ease,
-    color 0.25s ease,
-    box-shadow 0.25s ease,
-    border-color 0.25s ease,
+    background-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease,
     transform 0.15s ease;
+}
+
+/* Secure Mode - Cyan border with subtle glow */
+:root:not([data-mode="lab"]) .mode-toggle {
+  border-color: #22d3ee;
+  color: #22d3ee;
+  background: rgba(15, 23, 42, 0.8);
+  box-shadow: 0 0 8px rgba(34, 211, 238, 0.2);
+}
+
+:root:not([data-mode="lab"]) .mode-toggle:hover {
+  box-shadow: 
+    0 0 15px rgba(34, 211, 238, 0.4),
+    0 0 25px rgba(34, 211, 238, 0.2);
+  background: rgba(34, 211, 238, 0.1);
 }
 
 .mode-toggle span {
@@ -115,6 +146,13 @@ body {
 .mode-toggle:focus-visible {
   outline: 2px solid var(--accent-color-hover);
   outline-offset: 2px;
+}
+
+/* Secure Mode - Cyan focus outline */
+:root:not([data-mode="lab"]) .mode-toggle:focus-visible {
+  outline: 2px solid #22d3ee;
+  outline-offset: 2px;
+  box-shadow: 0 0 15px rgba(34, 211, 238, 0.4);
 }
 
 .mode-toggle:hover:not(:disabled) {

@@ -15,6 +15,18 @@
   margin-bottom: 2rem;
   font-family: "Milker", "Impact", "Arial Black", sans-serif;
   letter-spacing: 2px;
+  transition: all 0.2s ease;
+}
+
+/* Secure Mode - Cyan title with monospace */
+:root:not([data-mode="lab"]) .detector-title {
+  font-family: "Courier New", "Monaco", "Consolas", monospace;
+  color: #22d3ee;
+  text-shadow: 
+    0 0 10px rgba(34, 211, 238, 0.6),
+    0 0 20px rgba(34, 211, 238, 0.4);
+  letter-spacing: 0.1em;
+  font-weight: 600;
 }
 
 /* Fast, smooth model tooltip (matches confidence tooltip feel) */
@@ -48,6 +60,7 @@
   padding: 2rem;
   border-radius: 12px;
   border: 2px solid #ddd;
+  transition: all 0.2s ease;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
@@ -63,15 +76,32 @@
   border-radius: 8px;
   font-family: "Georgia", serif;
   font-size: 1rem;
+  transition: all 0.2s ease;
   resize: vertical;
   line-height: 1.6;
-  transition: border-color 0.3s;
 }
 
 .email-body:focus {
   outline: none;
   border-color: #8b0000;
   box-shadow: 0 0 0 2px rgba(139, 0, 0, 0.1);
+}
+
+/* Secure Mode - Cyan focus outline */
+:root:not([data-mode="lab"]) .email-body {
+  background-color: #0f172a;
+  border: 1px solid #1e293b;
+  color: #e5e7eb;
+  font-family: "Courier New", monospace;
+}
+
+:root:not([data-mode="lab"]) .email-body:focus {
+  outline: 2px solid #22d3ee;
+  outline-offset: 2px;
+  border-color: #22d3ee;
+  box-shadow: 
+    0 0 0 2px rgba(34, 211, 238, 0.2),
+    0 0 15px rgba(34, 211, 238, 0.3);
 }
 
 .word-count {
@@ -123,6 +153,23 @@
   background-color: #fafafa;
 }
 
+/* Secure Mode - Keep white/light background for model cards */
+:root:not([data-mode="lab"]) .model-card {
+  background-color: white;
+  border-color: #e0e0e0;
+}
+
+:root:not([data-mode="lab"]) .model-card:hover {
+  border-color: #22d3ee;
+  box-shadow: 0 4px 12px rgba(34, 211, 238, 0.2);
+}
+
+:root:not([data-mode="lab"]) .model-card.selected {
+  border-color: #22d3ee;
+  background-color: rgba(34, 211, 238, 0.05);
+  box-shadow: 0 0 0 2px rgba(34, 211, 238, 0.2);
+}
+
 .model-card:hover {
   border-color: var(--accent-color);
   background-color: var(--panel-bg);
@@ -143,9 +190,10 @@
   margin-bottom: 0.5rem;
 }
 
-/* Ensure model names are green in Secure Mode */
+/* Ensure model names are cyan in Secure Mode */
 :root:not([data-mode="lab"]) .model-name {
-  color: #16a34a; /* green for Secure Mode */
+  color: #22d3ee; /* cyan for Secure Mode */
+  text-shadow: 0 0 8px rgba(34, 211, 238, 0.4);
 }
 
 /* Model names are red in Lab Mode (via --accent-color variable) */
@@ -157,6 +205,12 @@
   font-size: 0.9rem;
   color: #666;
   margin-bottom: 0.5rem;
+  transition: color 0.2s ease;
+}
+
+/* Secure Mode - Keep dark text on white background */
+:root:not([data-mode="lab"]) .model-description {
+  color: #666;
 }
 
 .model-radio {
@@ -232,6 +286,25 @@
   background-color: #f8f9fa;
   border-radius: 12px;
   border: 2px solid #e0e0e0;
+  transition: all 0.2s ease;
+}
+
+/* Secure Mode - Dark model info card */
+:root:not([data-mode="lab"]) .model-info {
+  background-color: #111827;
+  border: 1px solid #1e293b;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+:root:not([data-mode="lab"]) .model-info h4 {
+  color: #22d3ee;
+  font-family: "Courier New", monospace;
+  text-shadow: 0 0 8px rgba(34, 211, 238, 0.4);
+}
+
+:root:not([data-mode="lab"]) .model-used {
+  color: #22d3ee;
+  text-shadow: 0 0 8px rgba(34, 211, 238, 0.4);
 }
 
 .model-info h4 {
@@ -447,56 +520,60 @@
   font-family: "Milker", "Impact", "Arial Black", sans-serif;
 }
 
-/* Secure Mode - Green Styling */
+/* Secure Mode - Cyan Styling */
 .saved-analyses-section--secure .saved-analyses-header .charts-section-title {
-  color: #2e7d32; /* green */
+  color: #22d3ee; /* cyan */
 }
 
 .saved-analyses-section--secure .saved-analyses-list {
-  background: #f1f8f4;
-  border: 1px solid #c8e6c9;
+  background: #111827;
+  border: 1px solid #1e293b;
 }
 
 .saved-analyses-section--secure .saved-analysis-item {
-  border: 1px solid #c8e6c9;
+  border: 1px solid #1e293b;
+  background-color: #0f172a;
+  color: #e5e7eb;
 }
 
 .saved-analyses-section--secure .saved-analysis-item:hover {
-  background: #e8f5e9;
-  border-color: #66bb6a;
+  background: rgba(34, 211, 238, 0.1);
+  border-color: rgba(34, 211, 238, 0.3);
+  box-shadow: 0 0 10px rgba(34, 211, 238, 0.2);
 }
 
 .saved-analyses-section--secure .saved-analysis-item--active {
-  background: #2e7d32;
-  border-color: #1b5e20;
-  color: #ffffff;
-  box-shadow: 0 3px 10px rgba(46, 125, 50, 0.45);
+  background: rgba(34, 211, 238, 0.15);
+  border-color: #22d3ee;
+  color: #22d3ee;
+  box-shadow: 0 0 15px rgba(34, 211, 238, 0.3);
 }
 
 .saved-analyses-section--secure .saved-analysis-item--active .saved-analysis-snippet,
 .saved-analyses-section--secure .saved-analysis-item--active .saved-analysis-timestamp {
-  color: #ffffff;
+  color: #22d3ee;
 }
 
 .saved-analyses-section--secure .saved-analysis-timestamp {
-  color: #1b5e20;
+  color: #9ca3af;
 }
 
 .saved-analyses-section--secure .saved-analysis-detail-card h4 {
-  color: #2e7d32;
+  color: #22d3ee;
 }
 
 .saved-analyses-section--secure .btn-secure {
-  background-color: #2e7d32;
-  border-color: #2e7d32;
+  background-color: #22d3ee;
+  border-color: #22d3ee;
   color: #fff;
   font-weight: 700;
   letter-spacing: 0.08em;
 }
 
 .saved-analyses-section--secure .btn-secure:hover {
-  background-color: #388e3c;
-  border-color: #388e3c;
+  background-color: rgba(34, 211, 238, 0.2);
+  border-color: #06b6d4;
+  box-shadow: 0 0 20px rgba(34, 211, 238, 0.4);
 }
 
 /* Lab Mode - Red Styling */

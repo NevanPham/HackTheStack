@@ -35,11 +35,25 @@
   color: var(--nav-link-color);
   font-weight: bold;
   padding: 8px 15px;
-  transition: background 0.3s;
+  transition: all 0.2s ease;
 }
 
-.nav-links a:hover {
-  background-color: var(--accent-color-hover);
+/* Secure Mode - Clean nav links with cyan hover */
+:root:not([data-mode="lab"]) .nav-links a {
+  color: #e5e7eb;
+  text-shadow: none;
+}
+
+:root:not([data-mode="lab"]) .nav-links a:hover {
+  background-color: rgba(34, 211, 238, 0.1);
+  border-radius: 5px;
+  color: #22d3ee;
+  box-shadow: 0 0 10px rgba(34, 211, 238, 0.3);
+}
+
+:root:not([data-mode="lab"]) .nav-links a.active {
+  background-color: rgba(34, 211, 238, 0.15);
+  color: #22d3ee;
   border-radius: 5px;
 }
 
@@ -59,6 +73,14 @@ footer {
   width: 100%;
   position: relative;
   z-index: 1; /* Ensure footer is above tooltips */
+  transition: all 0.2s ease;
+}
+
+/* Secure Mode - Dark footer */
+:root:not([data-mode="lab"]) footer {
+  background-color: #0a0f1e;
+  color: #9ca3af;
+  border-top: 1px solid rgba(34, 211, 238, 0.1);
 }
 
 /* Buttons */
@@ -78,23 +100,58 @@ footer {
 .btn-primary {
   background-color: var(--accent-color);
   color: #ffffff;
+  transition: all 0.2s ease;
+}
+
+/* Secure Mode - Transparent/dark button with cyan border */
+:root:not([data-mode="lab"]) .btn-primary {
+  background-color: transparent;
+  color: #22d3ee;
+  border: 1px solid #22d3ee;
+  box-shadow: 0 0 10px rgba(34, 211, 238, 0.2);
+  text-shadow: none;
+}
+
+:root:not([data-mode="lab"]) .btn-primary:hover {
+  background-color: rgba(34, 211, 238, 0.1);
+  border-color: #22d3ee;
+  color: #22d3ee;
+  box-shadow: 
+    0 0 20px rgba(34, 211, 238, 0.4),
+    0 0 30px rgba(34, 211, 238, 0.2);
+  transform: translateY(-1px);
 }
 
 .btn-primary:hover {
   background-color: var(--accent-color-hover);
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .btn-secondary {
   background-color: var(--error-bg);
   color: var(--accent-color);
+  transition: all 0.2s ease;
+}
+
+/* Secure Mode - Muted blue outline for secondary buttons */
+:root:not([data-mode="lab"]) .btn-secondary {
+  background-color: transparent;
+  color: #3b82f6;
+  border: 1px solid #3b82f6;
+  box-shadow: none;
+}
+
+:root:not([data-mode="lab"]) .btn-secondary:hover {
+  background-color: rgba(59, 130, 246, 0.1);
+  border-color: #3b82f6;
+  color: #3b82f6;
+  transform: translateY(-1px);
+  box-shadow: none;
 }
 
 .btn-secondary:hover {
   background-color: #d0d0d0;
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .predict-btn {
@@ -139,6 +196,13 @@ footer {
 .username {
   color: var(--nav-link-color);
   font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+/* Secure Mode - Light gray username */
+:root:not([data-mode="lab"]) .username {
+  color: #e5e7eb;
+  font-family: "Courier New", monospace;
 }
 
 .logout-button {
@@ -150,24 +214,30 @@ footer {
   cursor: pointer;
   font-size: 0.85rem;
   font-weight: 500;
-  transition: all 0.3s;
+  transition: all 0.2s ease;
   font-family: "Georgia", serif;
 }
 
-/* Secure mode: white text and border on green navbar */
+/* Secure Mode - Cyan outline button */
 :root:not([data-mode="lab"]) .logout-button {
-  border-color: white;
-  color: white;
+  border-color: #22d3ee;
+  color: #22d3ee;
+  background-color: transparent;
+  box-shadow: 0 0 8px rgba(34, 211, 238, 0.2);
+  font-family: "Courier New", monospace;
+}
+
+:root:not([data-mode="lab"]) .logout-button:hover {
+  background-color: rgba(34, 211, 238, 0.1);
+  border-color: #22d3ee;
+  color: #22d3ee;
+  box-shadow: 
+    0 0 15px rgba(34, 211, 238, 0.4),
+    0 0 25px rgba(34, 211, 238, 0.2);
 }
 
 .logout-button:hover {
   background-color: var(--accent-color);
-  color: white;
-}
-
-/* Secure mode hover: keep white text on green background */
-:root:not([data-mode="lab"]) .logout-button:hover {
-  background-color: rgba(255, 255, 255, 0.2);
   color: white;
 }
 

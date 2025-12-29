@@ -10,6 +10,29 @@
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
+  transition: all 0.2s ease;
+}
+
+/* Secure Mode - Keep white background but adjust text colors */
+:root:not([data-mode="lab"]) .confidence-chart-container {
+  background: white;
+  border: 1px solid #1e293b;
+}
+
+:root:not([data-mode="lab"]) .chart-title {
+  color: #1f2937;
+}
+
+:root:not([data-mode="lab"]) .model-chart-description {
+  color: #6b7280;
+}
+
+:root:not([data-mode="lab"]) .confidence-level {
+  color: #6b7280;
+}
+
+:root:not([data-mode="lab"]) .detail-label {
+  color: #6b7280;
 }
 
 /* Header with title and regenerate button */
@@ -78,9 +101,10 @@
   letter-spacing: 0.5px;
 }
 
-/* Model chart titles are green in Secure Mode */
+/* Model chart titles are cyan in Secure Mode */
 :root:not([data-mode="lab"]) .model-chart-title {
-  color: #16a34a; /* green for Secure Mode */
+  color: #22d3ee; /* cyan for Secure Mode */
+  text-shadow: 0 0 8px rgba(34, 211, 238, 0.4);
 }
 
 /* Model chart titles are red in Lab Mode */

@@ -18,6 +18,18 @@
   margin-bottom: 2rem;
   text-align: center;
   font-family: "Milker", "Impact", "Arial Black", sans-serif;
+  transition: all 0.2s ease;
+}
+
+/* Secure Mode - Cyan glow with monospace */
+:root:not([data-mode="lab"]) .page-title {
+  font-family: "Courier New", "Monaco", "Consolas", monospace;
+  font-weight: 600;
+  color: #22d3ee;
+  text-shadow: 
+    0 0 10px rgba(34, 211, 238, 0.6),
+    0 0 20px rgba(34, 211, 238, 0.4);
+  letter-spacing: 0.1em;
 }
 
 /* Section Titles */
@@ -28,6 +40,15 @@
   margin-bottom: 1.5rem;
   font-family: "Milker", "Impact", "Arial Black", sans-serif;
   letter-spacing: 1px;
+  transition: all 0.2s ease;
+}
+
+/* Secure Mode - Subtle cyan section titles */
+:root:not([data-mode="lab"]) .section-title {
+  font-family: "Courier New", monospace;
+  color: #22d3ee;
+  text-shadow: 0 0 8px rgba(34, 211, 238, 0.4);
+  letter-spacing: 0.05em;
 }
 
 /* Grid Systems */
@@ -57,12 +78,27 @@
   padding: 2rem;
   border-radius: 8px;
   border-left: 4px solid var(--accent-color);
-  transition: transform 0.3s;
+  transition: all 0.2s ease;
+}
+
+/* Secure Mode - Dark panels with soft blue borders */
+:root:not([data-mode="lab"]) .feature-card {
+  background-color: #111827;
+  border-left: 2px solid #1e293b;
+  border: 1px solid #1e293b;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+:root:not([data-mode="lab"]) .feature-card:hover {
+  border-color: rgba(34, 211, 238, 0.3);
+  box-shadow: 
+    0 0 15px rgba(34, 211, 238, 0.2),
+    0 4px 12px rgba(0, 0, 0, 0.4);
+  transform: translateY(-2px);
 }
 
 .feature-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .feature-card h3 {
@@ -84,6 +120,21 @@
   border: 2px solid var(--panel-border);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   animation: slideUp 0.4s ease-out;
+  transition: all 0.2s ease;
+}
+
+/* Secure Mode - SOC dashboard style panels */
+:root:not([data-mode="lab"]) .analysis-panel {
+  background-color: #111827;
+  border: 1px solid #1e293b;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+:root:not([data-mode="lab"]) .analysis-panel:hover {
+  border-color: rgba(34, 211, 238, 0.3);
+  box-shadow: 
+    0 0 15px rgba(34, 211, 238, 0.15),
+    0 4px 12px rgba(0, 0, 0, 0.5);
 }
 
 @keyframes slideUp {

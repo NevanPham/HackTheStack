@@ -6,6 +6,12 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  transition: background 0.2s ease;
+}
+
+/* Secure Mode - Dark gradient background */
+:root:not([data-mode="lab"]) .visualizations-section {
+  background: linear-gradient(135deg, #0a0f1e 0%, #0f172a 50%, #111827 100%);
 }
 
 .section-intro {
@@ -19,11 +25,25 @@
   font-weight: 700;
   color: #1a1a2e;
   margin-bottom: 15px;
+  transition: color 0.2s ease;
+}
+
+/* Secure Mode - Cyan title */
+:root:not([data-mode="lab"]) .section-intro h2 {
+  color: #22d3ee;
+  font-family: "Courier New", monospace;
+  text-shadow: 0 0 10px rgba(34, 211, 238, 0.6);
 }
 
 .section-intro p {
   font-size: 1.2rem;
   color: #555;
+  transition: color 0.2s ease;
+}
+
+/* Secure Mode - Muted gray text */
+:root:not([data-mode="lab"]) .section-intro p {
+  color: #9ca3af;
 }
 
 /* Dataset Overview */
@@ -36,6 +56,21 @@
   border-radius: 16px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
   animation: fadeInUp 0.8s ease-out 0.2s both;
+  transition: all 0.2s ease;
+}
+
+/* Secure Mode - Dark panel with blue border */
+:root:not([data-mode="lab"]) .dataset-overview {
+  background: #111827;
+  border: 1px solid #1e293b;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+:root:not([data-mode="lab"]) .dataset-overview:hover {
+  border-color: rgba(34, 211, 238, 0.3);
+  box-shadow: 
+    0 0 20px rgba(34, 211, 238, 0.2),
+    0 10px 40px rgba(0, 0, 0, 0.6);
 }
 
 .section-title {
@@ -44,6 +79,14 @@
   color: #1a1a2e;
   margin-bottom: 30px;
   text-align: center;
+  transition: color 0.2s ease;
+}
+
+/* Secure Mode - Cyan section title */
+:root:not([data-mode="lab"]) .visualizations-section .section-title {
+  color: #22d3ee;
+  font-family: "Courier New", monospace;
+  text-shadow: 0 0 8px rgba(34, 211, 238, 0.4);
 }
 
 .overview-grid {
@@ -166,6 +209,25 @@
   align-items: center;
   overflow-x: auto;
   overflow-y: visible;
+  transition: all 0.2s ease;
+}
+
+/* Secure Mode - Dark panel with blue border (like dataset-overview) */
+:root:not([data-mode="lab"]) .feature-importance-chart,
+:root:not([data-mode="lab"]) .feature-distribution-chart,
+:root:not([data-mode="lab"]) .correlation-heatmap {
+  background: #111827;
+  border: 1px solid #1e293b;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+:root:not([data-mode="lab"]) .feature-importance-chart:hover,
+:root:not([data-mode="lab"]) .feature-distribution-chart:hover,
+:root:not([data-mode="lab"]) .correlation-heatmap:hover {
+  border-color: rgba(34, 211, 238, 0.3);
+  box-shadow: 
+    0 0 20px rgba(34, 211, 238, 0.2),
+    0 10px 40px rgba(0, 0, 0, 0.6);
 }
 
 .chart-header {
@@ -180,6 +242,13 @@
   font-weight: 600;
   color: #1a1a2e;
   margin-bottom: 8px;
+  transition: color 0.2s ease;
+}
+
+/* Secure Mode - Cyan chart titles */
+:root:not([data-mode="lab"]) .chart-header h3 {
+  color: #22d3ee;
+  text-shadow: 0 0 8px rgba(34, 211, 238, 0.4);
 }
 
 .chart-description {
@@ -192,6 +261,12 @@
   text-align: left;
   color: #444;
   font-style: normal;
+  transition: color 0.2s ease;
+}
+
+/* Secure Mode - Muted gray description */
+:root:not([data-mode="lab"]) .chart-description {
+  color: #9ca3af;
 }
 
 /* Filter Buttons */
