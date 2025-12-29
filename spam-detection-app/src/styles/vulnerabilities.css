@@ -3,6 +3,17 @@
   margin: 0 auto;
   padding: 3rem 2rem 4rem;
   color: #222;
+  transition: all 0.2s ease;
+}
+
+/* Secure Mode - Light text on dark background */
+:root:not([data-mode="lab"]) .vulnerabilities-page {
+  color: #d1d5db;
+}
+
+/* Lab Mode - Light text on dark background */
+:root[data-mode="lab"] .vulnerabilities-page {
+  color: #d1d5db;
 }
 
 .vuln-hero {
@@ -15,6 +26,19 @@
   font-weight: 700;
   color: var(--accent-color);
   margin: 0 0 0.5rem 0;
+  transition: all 0.2s ease;
+}
+
+/* Secure Mode - Cyan eyebrow with glow */
+:root:not([data-mode="lab"]) .eyebrow {
+  color: #22d3ee;
+  text-shadow: 0 0 10px rgba(34, 211, 238, 0.4);
+}
+
+/* Lab Mode - Red eyebrow with glow */
+:root[data-mode="lab"] .eyebrow {
+  color: #ef4444;
+  text-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
 }
 
 .vuln-hero h1 {
@@ -22,12 +46,46 @@
   margin: 0 0 0.75rem 0;
   font-family: "Milker", "Impact", "Arial Black", sans-serif;
   color: var(--accent-color);
+  transition: all 0.2s ease;
+}
+
+/* Secure Mode - Cyan title with glow and monospace */
+:root:not([data-mode="lab"]) .vuln-hero h1 {
+  font-family: "Courier New", "Monaco", "Consolas", monospace;
+  color: #22d3ee;
+  text-shadow: 
+    0 0 10px rgba(34, 211, 238, 0.6),
+    0 0 20px rgba(34, 211, 238, 0.4);
+  letter-spacing: 0.1em;
+  font-weight: 600;
+}
+
+/* Lab Mode - Red title with glow and monospace */
+:root[data-mode="lab"] .vuln-hero h1 {
+  font-family: "Courier New", "Monaco", "Consolas", monospace;
+  color: #ef4444;
+  text-shadow: 
+    0 0 10px rgba(239, 68, 68, 0.6),
+    0 0 20px rgba(239, 68, 68, 0.4);
+  letter-spacing: 0.1em;
+  font-weight: 600;
 }
 
 .lead {
   font-size: 1.05rem;
   color: var(--accent-color);
   max-width: 900px;
+  transition: all 0.2s ease;
+}
+
+/* Secure Mode - Brighter lead text */
+:root:not([data-mode="lab"]) .lead {
+  color: #d1d5db;
+}
+
+/* Lab Mode - Brighter lead text */
+:root[data-mode="lab"] .lead {
+  color: #d1d5db;
 }
 
 .vuln-section {
@@ -40,6 +98,21 @@
   border-radius: 14px;
   padding: 1.75rem;
   box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  transition: all 0.2s ease;
+}
+
+/* Secure Mode - Dark card with cyan glow */
+:root:not([data-mode="lab"]) .vuln-card {
+  background: rgba(15, 23, 42, 0.9);
+  border: 2px solid rgba(34, 211, 238, 0.3);
+  box-shadow: 0 0 20px rgba(34, 211, 238, 0.15);
+}
+
+/* Lab Mode - Dark card with red glow */
+:root[data-mode="lab"] .vuln-card {
+  background: rgba(26, 15, 15, 0.9);
+  border: 2px solid rgba(239, 68, 68, 0.3);
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.15);
 }
 
 .vuln-label {
@@ -47,12 +120,36 @@
   font-weight: 800;
   color: var(--accent-color);
   margin: 0 0 1rem 0;
+  transition: all 0.2s ease;
+}
+
+/* Secure Mode - Cyan label with glow */
+:root:not([data-mode="lab"]) .vuln-label {
+  color: #22d3ee;
+  text-shadow: 0 0 10px rgba(34, 211, 238, 0.4);
+}
+
+/* Lab Mode - Red label with glow */
+:root[data-mode="lab"] .vuln-label {
+  color: #ef4444;
+  text-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
 }
 
 .vuln-card h2 {
   margin: 0 0 1rem 0;
   font-size: 1.6rem;
   color: #111;
+  transition: all 0.2s ease;
+}
+
+/* Secure Mode - Light heading */
+:root:not([data-mode="lab"]) .vuln-card h2 {
+  color: #f3f4f6;
+}
+
+/* Lab Mode - Light heading */
+:root[data-mode="lab"] .vuln-card h2 {
+  color: #f3f4f6;
 }
 
 .vuln-grid {
@@ -72,17 +169,52 @@
   border: 1px solid #e6e6e6;
   border-radius: 10px;
   padding: 1rem;
+  transition: all 0.2s ease;
+}
+
+/* Secure Mode - Dark tile with subtle cyan border */
+:root:not([data-mode="lab"]) .vuln-tile {
+  background: rgba(10, 15, 30, 0.7);
+  border: 1px solid rgba(34, 211, 238, 0.2);
+}
+
+/* Lab Mode - Dark tile with subtle red border */
+:root[data-mode="lab"] .vuln-tile {
+  background: rgba(18, 8, 8, 0.7);
+  border: 1px solid rgba(239, 68, 68, 0.2);
 }
 
 .vuln-tile h3 {
   margin: 0 0 0.5rem 0;
   font-size: 1.05rem;
+  transition: all 0.2s ease;
+}
+
+/* Secure Mode - Cyan heading */
+:root:not([data-mode="lab"]) .vuln-tile h3 {
+  color: #22d3ee;
+}
+
+/* Lab Mode - Red heading */
+:root[data-mode="lab"] .vuln-tile h3 {
+  color: #ef4444;
 }
 
 .vuln-tile p {
   margin: 0;
   color: #444;
   line-height: 1.6;
+  transition: all 0.2s ease;
+}
+
+/* Secure Mode - Light text */
+:root:not([data-mode="lab"]) .vuln-tile p {
+  color: #d1d5db;
+}
+
+/* Lab Mode - Light text */
+:root[data-mode="lab"] .vuln-tile p {
+  color: #d1d5db;
 }
 
 .try-it-card {
@@ -91,17 +223,52 @@
   border-radius: 12px;
   padding: 1.5rem;
   margin-top: 1.25rem;
+  transition: all 0.2s ease;
+}
+
+/* Secure Mode - Dark card with cyan dashed border */
+:root:not([data-mode="lab"]) .try-it-card {
+  background: rgba(10, 15, 30, 0.5);
+  border: 2px dashed rgba(34, 211, 238, 0.4);
+}
+
+/* Lab Mode - Dark card with red dashed border */
+:root[data-mode="lab"] .try-it-card {
+  background: rgba(18, 8, 8, 0.5);
+  border: 2px dashed rgba(239, 68, 68, 0.4);
 }
 
 .try-it-card h3 {
   margin: 0 0 0.5rem 0;
   color: var(--accent-color);
+  transition: all 0.2s ease;
+}
+
+/* Secure Mode - Cyan heading */
+:root:not([data-mode="lab"]) .try-it-card h3 {
+  color: #22d3ee;
+}
+
+/* Lab Mode - Red heading */
+:root[data-mode="lab"]) .try-it-card h3 {
+  color: #ef4444;
 }
 
 .try-it-card p {
   margin: 0;
   color: #333;
   line-height: 1.6;
+  transition: all 0.2s ease;
+}
+
+/* Secure Mode - Light text */
+:root:not([data-mode="lab"]) .try-it-card p {
+  color: #d1d5db;
+}
+
+/* Lab Mode - Light text */
+:root[data-mode="lab"] .try-it-card p {
+  color: #d1d5db;
 }
 
 @media (max-width: 640px) {
