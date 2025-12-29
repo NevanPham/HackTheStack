@@ -14,6 +14,11 @@
   background: linear-gradient(135deg, #0a0f1e 0%, #0f172a 50%, #111827 100%);
 }
 
+/* Lab Mode - Dark red gradient background */
+:root[data-mode="lab"] .visualizations-section {
+  background: linear-gradient(135deg, #120808 0%, #1a0f0f 50%, #1f1414 100%);
+}
+
 .section-intro {
   text-align: center;
   margin-bottom: 60px;
@@ -33,6 +38,13 @@
   color: #22d3ee;
   font-family: "Courier New", monospace;
   text-shadow: 0 0 10px rgba(34, 211, 238, 0.6);
+}
+
+/* Lab Mode - Red title */
+:root[data-mode="lab"] .section-intro h2 {
+  color: #ef4444;
+  font-family: "Courier New", monospace;
+  text-shadow: 0 0 10px rgba(239, 68, 68, 0.6);
 }
 
 .section-intro p {
@@ -73,6 +85,20 @@
     0 10px 40px rgba(0, 0, 0, 0.6);
 }
 
+/* Lab Mode - Dark red panel with red border */
+:root[data-mode="lab"] .dataset-overview {
+  background: #1f1414;
+  border: 1px solid #3a1f1f;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+:root[data-mode="lab"] .dataset-overview:hover {
+  border-color: rgba(239, 68, 68, 0.3);
+  box-shadow: 
+    0 0 20px rgba(239, 68, 68, 0.2),
+    0 10px 40px rgba(0, 0, 0, 0.6);
+}
+
 .section-title {
   font-size: 2rem;
   font-weight: 700;
@@ -87,6 +113,13 @@
   color: #22d3ee;
   font-family: "Courier New", monospace;
   text-shadow: 0 0 8px rgba(34, 211, 238, 0.4);
+}
+
+/* Lab Mode - Red section title */
+:root[data-mode="lab"] .visualizations-section .section-title {
+  color: #ef4444;
+  font-family: "Courier New", monospace;
+  text-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
 }
 
 .overview-grid {
@@ -191,6 +224,20 @@
     0 10px 40px rgba(0, 0, 0, 0.6);
 }
 
+/* Lab Mode - Dark red panel with red border */
+:root[data-mode="lab"] .features-section {
+  background: #1f1414;
+  border: 1px solid #3a1f1f;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+:root[data-mode="lab"] .features-section:hover {
+  border-color: rgba(239, 68, 68, 0.3);
+  box-shadow: 
+    0 0 20px rgba(239, 68, 68, 0.2),
+    0 10px 40px rgba(0, 0, 0, 0.6);
+}
+
 .section-description {
   text-align: center;
   font-size: 1.1rem;
@@ -261,6 +308,12 @@
 :root:not([data-mode="lab"]) .chart-header h3 {
   color: #22d3ee;
   text-shadow: 0 0 8px rgba(34, 211, 238, 0.4);
+}
+
+/* Lab Mode - Red chart titles */
+:root[data-mode="lab"] .chart-header h3 {
+  color: #ef4444;
+  text-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
 }
 
 .chart-description {

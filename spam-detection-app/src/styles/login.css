@@ -13,6 +13,11 @@
   background: linear-gradient(135deg, #0a0f1e 0%, #0f172a 50%, #111827 100%);
 }
 
+/* Lab Mode - Dark red gradient */
+:root[data-mode="lab"] .login-container {
+  background: linear-gradient(135deg, #120808 0%, #1a0f0f 50%, #1f1414 100%);
+}
+
 .login-box {
   background: white;
   border-radius: 12px;
@@ -32,6 +37,15 @@
     0 0 20px rgba(34, 211, 238, 0.1);
 }
 
+/* Lab Mode - Dark red panel with red border */
+:root[data-mode="lab"] .login-box {
+  background: #1f1414;
+  border: 1px solid #3a1f1f;
+  box-shadow: 
+    0 10px 40px rgba(0, 0, 0, 0.6),
+    0 0 20px rgba(239, 68, 68, 0.1);
+}
+
 .login-box h1 {
   font-family: 'Cinzel', serif;
   font-size: 2.5rem;
@@ -46,6 +60,13 @@
   font-family: "Courier New", monospace;
   color: #22d3ee;
   text-shadow: 0 0 10px rgba(34, 211, 238, 0.6);
+}
+
+/* Lab Mode - Red title with monospace */
+:root[data-mode="lab"] .login-box h1 {
+  font-family: "Courier New", monospace;
+  color: #ef4444;
+  text-shadow: 0 0 10px rgba(239, 68, 68, 0.6);
 }
 
 .login-box h2 {

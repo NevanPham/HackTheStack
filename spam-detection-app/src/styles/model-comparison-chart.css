@@ -59,6 +59,12 @@
     text-shadow: 0 0 8px rgba(34, 211, 238, 0.4);
 }
 
+/* Lab Mode - Red model titles */
+:root[data-mode="lab"] .model-chart-title.small {
+    color: #ef4444;
+    text-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
+}
+
 .model-chart-description.small {
     font-size: 0.8rem;
     color: #666;

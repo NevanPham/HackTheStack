@@ -32,6 +32,17 @@
   letter-spacing: 0.1em;
 }
 
+/* Lab Mode - Red glow with monospace */
+:root[data-mode="lab"] .page-title {
+  font-family: "Courier New", "Monaco", "Consolas", monospace;
+  font-weight: 600;
+  color: #ef4444;
+  text-shadow: 
+    0 0 10px rgba(239, 68, 68, 0.6),
+    0 0 20px rgba(239, 68, 68, 0.4);
+  letter-spacing: 0.1em;
+}
+
 /* Section Titles */
 .section-title {
   color: var(--accent-color);
@@ -48,6 +59,14 @@
   font-family: "Courier New", monospace;
   color: #22d3ee;
   text-shadow: 0 0 8px rgba(34, 211, 238, 0.4);
+  letter-spacing: 0.05em;
+}
+
+/* Lab Mode - Subtle red section titles */
+:root[data-mode="lab"] .section-title {
+  font-family: "Courier New", monospace;
+  color: #ef4444;
+  text-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
   letter-spacing: 0.05em;
 }
 
@@ -97,6 +116,22 @@
   transform: translateY(-2px);
 }
 
+/* Lab Mode - Dark red panels with soft red borders */
+:root[data-mode="lab"] .feature-card {
+  background-color: #1f1414;
+  border-left: 2px solid #3a1f1f;
+  border: 1px solid #3a1f1f;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+:root[data-mode="lab"] .feature-card:hover {
+  border-color: rgba(239, 68, 68, 0.3);
+  box-shadow: 
+    0 0 15px rgba(239, 68, 68, 0.2),
+    0 4px 12px rgba(0, 0, 0, 0.4);
+  transform: translateY(-2px);
+}
+
 .feature-card:hover {
   transform: translateY(-5px);
 }
@@ -134,6 +169,20 @@
   border-color: rgba(34, 211, 238, 0.3);
   box-shadow: 
     0 0 15px rgba(34, 211, 238, 0.15),
+    0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+/* Lab Mode - Dark red panels */
+:root[data-mode="lab"] .analysis-panel {
+  background-color: #1f1414;
+  border: 1px solid #3a1f1f;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+:root[data-mode="lab"] .analysis-panel:hover {
+  border-color: rgba(239, 68, 68, 0.3);
+  box-shadow: 
+    0 0 15px rgba(239, 68, 68, 0.15),
     0 4px 12px rgba(0, 0, 0, 0.5);
 }
 

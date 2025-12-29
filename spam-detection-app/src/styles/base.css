@@ -42,22 +42,38 @@
 }
 
 :root[data-mode="lab"] {
-  /* Lab - red & black / "hackable" */
-  --bg-color: #020617;              /* near-black */
-  --text-color: #fee2e2;            /* soft red-tinted text */
-  --accent-color: #ef4444;          /* bright red accent */
-  --accent-color-hover: #f97373;    /* lighter red hover */
-  --muted-text-color: #fca5a5;      /* muted red */
-  --panel-bg: #020617;
-  --panel-border: #4b0101;
-  --navbar-bg: #020617;
-  --nav-link-color: #fee2e2;
-  --footer-bg: #020617;
-  --footer-text-color: #fca5a5;
-  --error-bg: #450a0a;
-  --error-text: #fee2e2;
-  --error-border: #fca5a5;
-  --glow-color: rgba(248, 113, 113, 0.8);
+  /* Lab Mode - dark red / danger cyber theme */
+  --bg-color: #120808;              /* dark red-black */
+  --bg-secondary: #1a0f0f;          /* secondary dark red */
+  --bg-panel: #1f1414;              /* panel background */
+  --text-color: #e5e7eb;            /* off-white text (same as Secure Mode) */
+  --text-secondary: #9ca3af;        /* secondary muted gray */
+  --accent-color: #ef4444;          /* neon red primary accent */
+  --accent-color-hover: #f43f5e;    /* crimson hover */
+  --accent-secondary: #f97316;       /* muted orange/amber secondary */
+  --muted-text-color: #9ca3af;      /* muted gray for secondary text */
+  --panel-bg: #1f1414;              /* dark red panel background */
+  --panel-border: #3a1f1f;          /* subtle red-gray border */
+  --navbar-bg: #1a0f0f;             /* dark red navbar */
+  --nav-link-color: #e5e7eb;        /* light text for nav */
+  --footer-bg: #120808;             /* dark red footer */
+  --footer-text-color: #9ca3af;     /* muted footer text */
+  --error-bg: #1f1414;              /* dark error background */
+  --error-text: #fca5a5;            /* muted red error text */
+  --error-border: #ef4444;          /* red error border */
+  --glow-color: rgba(239, 68, 68, 0.7);
+  /* Enhanced glow variables for lab mode - red */
+  --glow-soft: rgba(239, 68, 68, 0.3);
+  --glow-medium: rgba(239, 68, 68, 0.5);
+  --glow-strong: rgba(239, 68, 68, 0.7);
+  --glow-intense: rgba(239, 68, 68, 0.9);
+  --glow-shadow-soft: 0 0 10px rgba(239, 68, 68, 0.2);
+  --glow-shadow-medium: 0 0 20px rgba(239, 68, 68, 0.4);
+  --glow-shadow-strong: 0 0 30px rgba(239, 68, 68, 0.6);
+  --glow-shadow-intense: 0 0 40px rgba(239, 68, 68, 0.8), 0 0 60px rgba(239, 68, 68, 0.4);
+  --text-glow-soft: 0 0 5px rgba(239, 68, 68, 0.4);
+  --text-glow-medium: 0 0 10px rgba(239, 68, 68, 0.6), 0 0 20px rgba(239, 68, 68, 0.3);
+  --text-glow-strong: 0 0 15px rgba(239, 68, 68, 0.8), 0 0 30px rgba(239, 68, 68, 0.5), 0 0 45px rgba(239, 68, 68, 0.3);
 }
 
 /* Import custom font */
@@ -137,6 +153,21 @@ body {
     0 0 15px rgba(34, 211, 238, 0.4),
     0 0 25px rgba(34, 211, 238, 0.2);
   background: rgba(34, 211, 238, 0.1);
+}
+
+/* Lab Mode - Red border with subtle glow */
+:root[data-mode="lab"] .mode-toggle {
+  border-color: #ef4444;
+  color: #ef4444;
+  background: rgba(26, 15, 15, 0.8);
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.2);
+}
+
+:root[data-mode="lab"] .mode-toggle:hover {
+  box-shadow: 
+    0 0 15px rgba(239, 68, 68, 0.4),
+    0 0 25px rgba(239, 68, 68, 0.2);
+  background: rgba(239, 68, 68, 0.1);
 }
 
 .mode-toggle span {

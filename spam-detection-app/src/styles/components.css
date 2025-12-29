@@ -57,6 +57,25 @@
   border-radius: 5px;
 }
 
+/* Lab Mode - Red nav links with red hover */
+:root[data-mode="lab"] .nav-links a {
+  color: #e5e7eb;
+  text-shadow: none;
+}
+
+:root[data-mode="lab"] .nav-links a:hover {
+  background-color: rgba(239, 68, 68, 0.1);
+  border-radius: 5px;
+  color: #ef4444;
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+}
+
+:root[data-mode="lab"] .nav-links a.active {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border-radius: 5px;
+}
+
 /* Active link */
 .nav-links a.active {
   background-color: var(--accent-color-hover) ;
@@ -81,6 +100,13 @@ footer {
   background-color: #0a0f1e;
   color: #9ca3af;
   border-top: 1px solid rgba(34, 211, 238, 0.1);
+}
+
+/* Lab Mode - Dark red footer */
+:root[data-mode="lab"] footer {
+  background-color: #120808;
+  color: #9ca3af;
+  border-top: 1px solid rgba(239, 68, 68, 0.1);
 }
 
 /* Buttons */
@@ -122,6 +148,25 @@ footer {
   transform: translateY(-1px);
 }
 
+/* Lab Mode - Transparent/dark button with red border */
+:root[data-mode="lab"] .btn-primary {
+  background-color: transparent;
+  color: #ef4444;
+  border: 1px solid #ef4444;
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.2);
+  text-shadow: none;
+}
+
+:root[data-mode="lab"] .btn-primary:hover {
+  background-color: rgba(239, 68, 68, 0.1);
+  border-color: #ef4444;
+  color: #ef4444;
+  box-shadow: 
+    0 0 20px rgba(239, 68, 68, 0.4),
+    0 0 30px rgba(239, 68, 68, 0.2);
+  transform: translateY(-1px);
+}
+
 .btn-primary:hover {
   background-color: var(--accent-color-hover);
   transform: translateY(-2px);
@@ -145,6 +190,22 @@ footer {
   background-color: rgba(59, 130, 246, 0.1);
   border-color: #3b82f6;
   color: #3b82f6;
+  transform: translateY(-1px);
+  box-shadow: none;
+}
+
+/* Lab Mode - Muted orange/amber outline for secondary buttons */
+:root[data-mode="lab"] .btn-secondary {
+  background-color: transparent;
+  color: #f97316;
+  border: 1px solid #f97316;
+  box-shadow: none;
+}
+
+:root[data-mode="lab"] .btn-secondary:hover {
+  background-color: rgba(249, 115, 22, 0.1);
+  border-color: #f97316;
+  color: #f97316;
   transform: translateY(-1px);
   box-shadow: none;
 }
@@ -234,6 +295,24 @@ footer {
   box-shadow: 
     0 0 15px rgba(34, 211, 238, 0.4),
     0 0 25px rgba(34, 211, 238, 0.2);
+}
+
+/* Lab Mode - Red outline button */
+:root[data-mode="lab"] .logout-button {
+  border-color: #ef4444;
+  color: #ef4444;
+  background-color: transparent;
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.2);
+  font-family: "Courier New", monospace;
+}
+
+:root[data-mode="lab"] .logout-button:hover {
+  background-color: rgba(239, 68, 68, 0.1);
+  border-color: #ef4444;
+  color: #ef4444;
+  box-shadow: 
+    0 0 15px rgba(239, 68, 68, 0.4),
+    0 0 25px rgba(239, 68, 68, 0.2);
 }
 
 .logout-button:hover {

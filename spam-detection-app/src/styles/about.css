@@ -13,6 +13,11 @@
   background: linear-gradient(135deg, #0a0f1e 0%, #0f172a 100%);
 }
 
+/* Lab Mode - Dark red background */
+:root[data-mode="lab"] .about-container {
+  background: linear-gradient(135deg, #120808 0%, #1a0f0f 100%);
+}
+
 .about-content {
   background-color: white;
   padding: 3rem;
@@ -25,6 +30,13 @@
 :root:not([data-mode="lab"]) .about-content {
   background-color: #111827;
   border: 1px solid #1e293b;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* Lab Mode - Dark red panel */
+:root[data-mode="lab"] .about-content {
+  background-color: #1f1414;
+  border: 1px solid #3a1f1f;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
@@ -80,6 +92,14 @@
   text-shadow: 0 0 10px rgba(34, 211, 238, 0.6);
 }
 
+/* Lab Mode - Red title with monospace */
+:root[data-mode="lab"] .about-section h2 {
+  color: #ef4444;
+  border-bottom-color: #ef4444;
+  font-family: "Courier New", monospace;
+  text-shadow: 0 0 10px rgba(239, 68, 68, 0.6);
+}
+
 /* Swap heading sizes between How It Works and Acknowledgement */
 .team-section .page-title {
   font-size: 2.2rem;
@@ -91,6 +111,12 @@
 :root:not([data-mode="lab"]) .team-section .page-title {
   color: #22d3ee;
   text-shadow: 0 0 10px rgba(34, 211, 238, 0.6);
+}
+
+/* Lab Mode - Red acknowledgement title */
+:root[data-mode="lab"] .team-section .page-title {
+  color: #ef4444;
+  text-shadow: 0 0 10px rgba(239, 68, 68, 0.6);
 }
 
 .about-section p {

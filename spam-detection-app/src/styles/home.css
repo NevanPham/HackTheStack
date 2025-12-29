@@ -13,6 +13,11 @@
   background: linear-gradient(135deg, #0a0f1e 0%, #0f172a 50%, #111827 100%);
 }
 
+/* Lab Mode - Dark red gradient background */
+:root[data-mode="lab"] .home-container {
+  background: linear-gradient(135deg, #120808 0%, #1a0f0f 50%, #1f1414 100%);
+}
+
 .hero-section {
   display: flex;
   justify-content: space-between;
@@ -30,6 +35,11 @@
 /* Secure Mode - Dark hero section */
 :root:not([data-mode="lab"]) .hero-section {
   background: linear-gradient(135deg, #0a0f1e 0%, #0f172a 100%);
+}
+
+/* Lab Mode - Dark red hero section */
+:root[data-mode="lab"] .hero-section {
+  background: linear-gradient(135deg, #120808 0%, #1a0f0f 100%);
 }
 
 .hero-content {
@@ -61,6 +71,19 @@
   letter-spacing: 0.1em;
 }
 
+/* Lab Mode - Red glow with monospace font */
+:root[data-mode="lab"] .hero-title {
+  font-family: "Courier New", "Monaco", "Consolas", monospace;
+  font-weight: 600;
+  color: #ef4444;
+  text-shadow: 
+    0 0 10px rgba(239, 68, 68, 0.6),
+    0 0 20px rgba(239, 68, 68, 0.4),
+    0 0 30px rgba(239, 68, 68, 0.2);
+  transform: none;
+  letter-spacing: 0.1em;
+}
+
 .hero-subtitle {
   font-size: 2rem;
   color: var(--accent-color);
@@ -72,6 +95,14 @@
 
 /* Secure Mode - Muted cyan subtitle */
 :root:not([data-mode="lab"]) .hero-subtitle {
+  color: #9ca3af;
+  font-family: "Courier New", monospace;
+  letter-spacing: 0.05em;
+  text-shadow: none;
+}
+
+/* Lab Mode - Muted gray subtitle */
+:root[data-mode="lab"] .hero-subtitle {
   color: #9ca3af;
   font-family: "Courier New", monospace;
   letter-spacing: 0.05em;

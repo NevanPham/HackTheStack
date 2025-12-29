@@ -29,6 +29,17 @@
   font-weight: 600;
 }
 
+/* Lab Mode - Red title with monospace */
+:root[data-mode="lab"] .detector-title {
+  font-family: "Courier New", "Monaco", "Consolas", monospace;
+  color: #ef4444;
+  text-shadow: 
+    0 0 10px rgba(239, 68, 68, 0.6),
+    0 0 20px rgba(239, 68, 68, 0.4);
+  letter-spacing: 0.1em;
+  font-weight: 600;
+}
+
 /* Fast, smooth model tooltip (matches confidence tooltip feel) */
 .model-tooltip {
   position: fixed;
@@ -181,6 +192,23 @@
   color: #9ca3af;
 }
 
+/* Lab Mode - Dark red background when selected */
+:root[data-mode="lab"] .model-card.selected {
+  border-color: #ef4444;
+  background-color: #1f1414;
+  box-shadow: 
+    0 0 0 2px rgba(239, 68, 68, 0.3),
+    0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+:root[data-mode="lab"] .model-card.selected .model-name {
+  color: #ef4444;
+}
+
+:root[data-mode="lab"] .model-card.selected .model-description {
+  color: #9ca3af;
+}
+
 .model-card:hover {
   border-color: var(--accent-color);
   background-color: var(--panel-bg);
@@ -316,6 +344,24 @@
 :root:not([data-mode="lab"]) .model-used {
   color: #22d3ee;
   text-shadow: 0 0 8px rgba(34, 211, 238, 0.4);
+}
+
+/* Lab Mode - Dark red model info card */
+:root[data-mode="lab"] .model-info {
+  background-color: #1f1414;
+  border: 1px solid #3a1f1f;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+:root[data-mode="lab"] .model-info h4 {
+  color: #ef4444;
+  font-family: "Courier New", monospace;
+  text-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
+}
+
+:root[data-mode="lab"] .model-used {
+  color: #ef4444;
+  text-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
 }
 
 .model-info h4 {

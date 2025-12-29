@@ -109,7 +109,8 @@
 
 /* Model chart titles are red in Lab Mode */
 :root[data-mode="lab"] .model-chart-title {
-  color: #8b0000; /* red for Lab Mode */
+  color: #ef4444; /* neon red for Lab Mode */
+  text-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
 }
 
 .model-chart-description {
