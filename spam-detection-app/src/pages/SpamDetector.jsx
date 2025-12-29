@@ -1,7 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import ConfidenceChart from '../components/ConfidenceChart';
 import ModelComparisonChart from '../components/ModelComparisonChart';
 import KMeansClusterChart from '../components/KMeansClusterChart';
+import { useSavedAnalyses } from '../hooks/useSavedAnalyses';
 import '../styles/confidence-chart.css';
 import '../styles/model-comparison-chart.css';
 import '../styles/kmeans-cluster-chart.css';
@@ -41,10 +43,31 @@ function SpamDetector({ labMode = false, csrfToken = null, onRefreshCsrf = null 
   const [error, setError] = useState(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [predictionData, setPredictionData] = useState(null); // Shared prediction data
-  const [savedAnalyses, setSavedAnalyses] = useState([]);
-  const [savedAnalysesLoading, setSavedAnalysesLoading] = useState(false);
-  const [savedAnalysesError, setSavedAnalysesError] = useState(null);
   const [selectedAnalysis, setSelectedAnalysis] = useState(null);
+  
+  // Search, sort, and pagination state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState('created_at');
+  const [sortOrder, setSortOrder] = useState('desc');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(10);
+  
+  // React Query client for invalidating cache
+  const queryClient = useQueryClient();
+  
+  // Use React Query hook for saved analyses
+  const { data: savedAnalysesData, isLoading: savedAnalysesLoading, error: savedAnalysesError } = useSavedAnalyses({
+    search: searchQuery,
+    sortBy,
+    sortOrder,
+    page: currentPage,
+    pageSize,
+    labMode,
+    enabled: true,
+  });
+  
+  const savedAnalyses = savedAnalysesData?.data || [];
+  const pagination = savedAnalysesData?.pagination || { totalItems: 0, totalPages: 0, hasNextPage: false, hasPreviousPage: false };
   const analysisSectionRef = useRef(null);
   const [modelTooltip, setModelTooltip] = useState({ visible: false, text: '', x: 0, y: 0 });
   const [wordLimitError, setWordLimitError] = useState(false);
@@ -195,34 +218,15 @@ function SpamDetector({ labMode = false, csrfToken = null, onRefreshCsrf = null 
     });
   };
 
-  const fetchSavedAnalyses = async () => {
-    setSavedAnalysesLoading(true);
-    setSavedAnalysesError(null);
-    try {
-      const userId = getUserId();
-      const resp = await fetch('http://localhost:8000/analysis/list', {
-        headers: {
-          'X-User-Id': userId,
-          'X-Lab-Mode': labMode ? 'true' : 'false'
-        }
-      });
-      if (!resp.ok) {
-        throw new Error(`Failed to load saved analyses: ${resp.status}`);
-      }
-      const data = await resp.json();
-      setSavedAnalyses(data || []);
-    } catch (err) {
-      console.error('Error loading saved analyses:', err);
-      setSavedAnalysesError(err.message || 'Failed to load saved analyses.');
-    } finally {
-      setSavedAnalysesLoading(false);
-    }
+  // Function to refresh saved analyses (invalidates React Query cache)
+  const refreshSavedAnalyses = () => {
+    queryClient.invalidateQueries({ queryKey: ['savedAnalyses'] });
   };
-
+  
+  // Reset to first page when search or sort changes
   useEffect(() => {
-    // Load history on first mount
-    fetchSavedAnalyses();
-  }, []);
+    setCurrentPage(1);
+  }, [searchQuery, sortBy, sortOrder]);
 
   // Note: Removed useEffect that was regenerating random predictions
   // The backend provides real, consistent predictions now
@@ -754,7 +758,7 @@ function SpamDetector({ labMode = false, csrfToken = null, onRefreshCsrf = null 
       });
       
       // Optimistically refresh list and select the newly saved analysis
-      await fetchSavedAnalyses();
+      refreshSavedAnalyses();
       setSelectedAnalysis(saved);
       
       // Clear message after 5 seconds
@@ -1091,12 +1095,77 @@ function SpamDetector({ labMode = false, csrfToken = null, onRefreshCsrf = null 
                       </div>
                       <div className="saved-analyses-layout">
                         <div className="saved-analyses-list">
+                          {/* Search and Sort Controls */}
+                          <div style={{ marginBottom: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                              <input
+                                type="text"
+                                placeholder="Search analyses..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                style={{
+                                  flex: 1,
+                                  padding: '0.5rem',
+                                  border: '1px solid #ddd',
+                                  borderRadius: '4px',
+                                  fontSize: '14px'
+                                }}
+                              />
+                              <button
+                                type="button"
+                                onClick={() => setSearchQuery('')}
+                                style={{
+                                  padding: '0.5rem 1rem',
+                                  border: '1px solid #ddd',
+                                  borderRadius: '4px',
+                                  background: '#f8f9fa',
+                                  cursor: 'pointer',
+                                  fontSize: '14px'
+                                }}
+                                disabled={!searchQuery}
+                              >
+                                Clear
+                              </button>
+                            </div>
+                            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                              <label style={{ fontSize: '14px', fontWeight: '500' }}>Sort by:</label>
+                              <select
+                                value={sortBy}
+                                onChange={(e) => setSortBy(e.target.value)}
+                                style={{
+                                  padding: '0.4rem',
+                                  border: '1px solid #ddd',
+                                  borderRadius: '4px',
+                                  fontSize: '14px'
+                                }}
+                              >
+                                <option value="created_at">Date</option>
+                                <option value="id">ID</option>
+                              </select>
+                              <select
+                                value={sortOrder}
+                                onChange={(e) => setSortOrder(e.target.value)}
+                                style={{
+                                  padding: '0.4rem',
+                                  border: '1px solid #ddd',
+                                  borderRadius: '4px',
+                                  fontSize: '14px'
+                                }}
+                              >
+                                <option value="desc">Newest First</option>
+                                <option value="asc">Oldest First</option>
+                              </select>
+                            </div>
+                          </div>
+                          
                           {savedAnalysesLoading && <p>Loading history...</p>}
                           {savedAnalysesError && (
-                            <p style={{ color: '#e74c3c' }}>{savedAnalysesError}</p>
+                            <p style={{ color: '#e74c3c' }}>{savedAnalysesError.message || 'Failed to load saved analyses.'}</p>
                           )}
                           {!savedAnalysesLoading && !savedAnalysesError && savedAnalyses.length === 0 && (
-                            <p style={{ fontSize: '14px', color: '#666' }}>No saved analyses yet.</p>
+                            <p style={{ fontSize: '14px', color: '#666' }}>
+                              {searchQuery ? 'No analyses found matching your search.' : 'No saved analyses yet.'}
+                            </p>
                           )}
                           <div className="saved-analyses-items">
                             {savedAnalyses.map((item) => (
@@ -1153,6 +1222,64 @@ function SpamDetector({ labMode = false, csrfToken = null, onRefreshCsrf = null 
                               </button>
                             ))}
                           </div>
+                          
+                          {/* Pagination Controls */}
+                          {!savedAnalysesLoading && !savedAnalysesError && pagination.totalPages > 1 && (
+                            <div style={{ 
+                              marginTop: '1rem', 
+                              display: 'flex', 
+                              justifyContent: 'space-between', 
+                              alignItems: 'center',
+                              padding: '0.75rem',
+                              borderTop: '1px solid #eee'
+                            }}>
+                              <div style={{ fontSize: '14px', color: '#666' }}>
+                                Showing {((currentPage - 1) * pageSize) + 1} - {Math.min(currentPage * pageSize, pagination.totalItems)} of {pagination.totalItems}
+                              </div>
+                              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                <button
+                                  type="button"
+                                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                                  disabled={!pagination.hasPreviousPage}
+                                  style={{
+                                    padding: '0.4rem 0.8rem',
+                                    border: '1px solid #ddd',
+                                    borderRadius: '4px',
+                                    background: pagination.hasPreviousPage ? '#fff' : '#f5f5f5',
+                                    cursor: pagination.hasPreviousPage ? 'pointer' : 'not-allowed',
+                                    fontSize: '14px',
+                                    opacity: pagination.hasPreviousPage ? 1 : 0.5
+                                  }}
+                                >
+                                  Previous
+                                </button>
+                                <span style={{ 
+                                  padding: '0.4rem 0.8rem', 
+                                  fontSize: '14px',
+                                  display: 'flex',
+                                  alignItems: 'center'
+                                }}>
+                                  Page {currentPage} of {pagination.totalPages}
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => setCurrentPage(prev => Math.min(pagination.totalPages, prev + 1))}
+                                  disabled={!pagination.hasNextPage}
+                                  style={{
+                                    padding: '0.4rem 0.8rem',
+                                    border: '1px solid #ddd',
+                                    borderRadius: '4px',
+                                    background: pagination.hasNextPage ? '#fff' : '#f5f5f5',
+                                    cursor: pagination.hasNextPage ? 'pointer' : 'not-allowed',
+                                    fontSize: '14px',
+                                    opacity: pagination.hasNextPage ? 1 : 0.5
+                                  }}
+                                >
+                                  Next
+                                </button>
+                              </div>
+                            </div>
+                          )}
                         </div>
                         <div className="saved-analyses-detail">
                           {selectedAnalysis ? (

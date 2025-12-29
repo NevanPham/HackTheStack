@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import Header from './components/Header'
 import Footer from './components/Footer'
 import Home from './pages/Home'
@@ -7,6 +8,17 @@ import About from './pages/About'
 import SpamDetector from './pages/SpamDetector'
 import Vulnerabilities from './pages/Vulnerabilities'
 import Login from './pages/Login'
+
+// Create a QueryClient instance
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      retry: 1,
+      staleTime: 30000, // 30 seconds
+    },
+  },
+})
 
 function AppContent({ labMode, onToggleLabMode, isAuthenticated, username, onLogin, onLogout, csrfToken, onRefreshCsrf }) {
   const location = useLocation();
@@ -311,18 +323,20 @@ function App() {
   };
 
   return (
-    <Router>
-      <AppContent
-        labMode={labMode}
-        onToggleLabMode={handleToggleLabMode}
-        isAuthenticated={isAuthenticated}
-        username={username}
-        onLogin={handleLogin}
-        onLogout={handleLogout}
-        csrfToken={csrfToken}
-        onRefreshCsrf={handleRefreshCsrf}
-      />
-    </Router>
+    <QueryClientProvider client={queryClient}>
+      <Router>
+        <AppContent
+          labMode={labMode}
+          onToggleLabMode={handleToggleLabMode}
+          isAuthenticated={isAuthenticated}
+          username={username}
+          onLogin={handleLogin}
+          onLogout={handleLogout}
+          csrfToken={csrfToken}
+          onRefreshCsrf={handleRefreshCsrf}
+        />
+      </Router>
+    </QueryClientProvider>
   );
 }
 

@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.90.14",
     "chart.js": "^4.5.1",
     "chartjs-plugin-zoom": "^2.2.0",
     "d3": "^7.9.0",
