@@ -289,6 +289,45 @@ function Vulnerabilities({ labMode }) {
           </div>
         </div>
       </section>
+
+      <section className="vuln-section">
+        <div className="vuln-card">
+          <p className="vuln-label">Vulnerability #8: Insecure File Upload (TXT Upload)</p>
+          <div className="vuln-grid">
+            <div className="vuln-tile">
+              <h3>❌ What went wrong</h3>
+              <p>
+                In Lab Mode, the file upload feature for .txt files relaxes validation in multiple ways. The critical flaws: (1) MIME type validation is skipped—the application only checks the filename extension (.txt) and trusts it, but extensions can be easily spoofed. A file can have a .txt extension but actually contain executable code, binary data, or malicious content. (2) The file size limit is increased from 100KB to 10MB, allowing attackers to upload much larger files that could exhaust server resources or contain extensive malicious payloads. (3) Files are stored using the original filename provided by the user, without sanitization or path validation. This makes the application vulnerable to path traversal attacks (using filenames like "../../../etc/passwd") and filename-based attacks. The application trusts user-provided filenames and file metadata without proper validation. In Secure Mode, the application performs strict validation: it requires both .txt extension AND text/plain MIME type verification, enforces a 100KB size limit, processes files in memory without storing them, and never trusts user-provided filenames. This prevents malicious file uploads, storage attacks, and resource exhaustion.
+              </p>
+            </div>
+            <div className="vuln-tile">
+              <h3>🔍 How it's exploited</h3>
+              <p>
+                An attacker can exploit the relaxed validation in multiple ways: (1) MIME type spoofing: Upload a file with a .txt extension but actual content that is not plain text (e.g., a PHP script renamed to "malicious.php.txt" or a binary file). In Lab Mode, the application only checks the extension, so it accepts the file. The server then processes or stores this file, potentially executing malicious code if the file is later accessed or processed incorrectly. (2) Size-based attacks: Upload very large files (up to 10MB) to exhaust server disk space, memory, or processing resources. This can lead to denial of service or system instability. (3) Filename-based attacks: Use malicious filenames like "../../../etc/passwd.txt" to attempt path traversal, overwrite system files, or access sensitive directories. The application stores files using the original filename without sanitization, so a path traversal attempt could write files outside the intended upload directory. (4) Storage attacks: Store malicious files on the server that could be accessed later, used for persistent attacks, or combined with other vulnerabilities. The vulnerability exists at the file validation and storage layer: the moment user input controls file metadata and storage paths, the trust boundary is broken.
+              </p>
+            </div>
+            <div className="vuln-tile">
+              <h3>⚠️ Realistic attack scenario</h3>
+              <p>
+                Step-by-step: (1) An attacker discovers the file upload feature accepts .txt files for spam analysis. (2) The attacker creates a malicious file containing PHP code (e.g., a web shell) and renames it to "analysis.txt" to bypass extension checks. (3) In Lab Mode, the attacker uploads this file. The application only checks the .txt extension, skips MIME type validation, and accepts the file. (4) The file is stored in the uploads/ directory using the original filename "analysis.txt". (5) If the application later serves uploaded files or processes them insecurely, the malicious code could be executed. Alternatively, the attacker uploads a file named "../../../backend/config.txt" to attempt path traversal and overwrite configuration files. (6) The attacker could also upload a 10MB file filled with data to exhaust server resources, causing denial of service for other users. (7) In a real application, this could lead to remote code execution, system file access, data exfiltration, or complete server compromise. The attack is particularly dangerous because it combines multiple weaknesses: trusting filenames, skipping content validation, and storing files with user-controlled names. Once a malicious file is stored, it becomes a persistent threat that can be exploited later, even if the upload vulnerability is fixed.
+              </p>
+            </div>
+            <div className="vuln-tile">
+              <h3>✅ How it should be fixed</h3>
+              <p>
+                Always validate file uploads using multiple layers of security. In Secure Mode, the application implements strict validation: (1) Verify both file extension AND MIME type—don't trust either alone. Check that the file extension matches the actual content type by examining file headers (magic bytes) or MIME type detection. (2) Enforce strict size limits appropriate for the use case (100KB for text analysis is reasonable). (3) Process files in memory and discard them immediately—never store uploaded files unless absolutely necessary. If storage is required, use server-generated random filenames (UUIDs) instead of user-provided names. (4) Sanitize and validate filenames: remove path components (../), special characters, and ensure filenames are safe. Never use user-provided filenames directly in file system operations. (5) Validate file content: read the file and verify it matches the expected format (UTF-8 text for .txt files). Don't trust file metadata—verify the actual content. (6) Store files outside the web root if possible, or use a content delivery network (CDN) with proper access controls. (7) Implement file type detection using magic bytes or content analysis, not just extensions or MIME types. The key principle: never trust user-provided file metadata. Always validate file content, use server-controlled filenames, and minimize file storage. If file uploads are necessary, implement a whitelist of allowed file types, scan uploaded files for malware, and restrict file access with proper permissions.
+              </p>
+            </div>
+          </div>
+
+          <div className="try-it-card">
+            <h3>Try it</h3>
+            <p>
+              Go to the <Link to="/spam-detector">Spam Detector</Link> and log in. In Secure Mode (Lab Mode OFF), try uploading a file that is not actually text/plain (you can create a file with a .txt extension but change its MIME type, or upload a file larger than 100KB). Notice that Secure Mode rejects files that don't meet strict validation requirements. Then toggle to Lab Mode (Lab Mode ON) and try uploading the same file. Notice that Lab Mode accepts files based only on the filename extension, allows larger files (up to 10MB), and stores them using the original filename in the uploads/ directory. Check the backend/uploads/ folder to see files stored with their original names, demonstrating the filename trust vulnerability.
+            </p>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
