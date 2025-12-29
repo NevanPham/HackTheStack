@@ -22,12 +22,15 @@ import httpx
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from fastapi import FastAPI, HTTPException, status, Header, Request, UploadFile, File, Form, UploadFile, File, Form
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI, HTTPException, status, Header, Request
+from fastapi.middleware.base import BaseHTTPMiddleware
+from starlette.requests import Request as StarletteRequest
+from starlette.responses import Response
 from contextlib import asynccontextmanager
 from pydantic import BaseModel
 from typing import List, Optional, Dict, Any, Tuple
 import numpy as np
+import traceback
 
 from src.lstm.model import LSTMTextClassifier
 from src.xgb.model import XGBTextClassifier
@@ -238,26 +241,94 @@ async def lifespan(app: FastAPI):
     print("Shutting down...")
 
 
+# Determine if we should show detailed API docs based on environment
+# In production/Secure Mode, we might want to hide these, but for this app
+# we'll keep them available (they can be restricted via authentication if needed)
 app = FastAPI(
     title="Spam Detection API",
     description="Multi-model spam detection API supporting XGBoost, LSTM, and K-Means",
     version="1.0.0",
     lifespan=lifespan,
+    docs_url="/docs",
+    redoc_url="/redoc",
+    # Note: In a real production deployment, consider disabling docs_url and redoc_url
+    # or protecting them with authentication
 )
 
-# Add CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://localhost:3000",
-        "http://localhost:5174",
-        "http://127.0.0.1:5173",
-    ],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+
+class DynamicCORSMiddleware(BaseHTTPMiddleware):
+    """
+    Custom CORS middleware that applies different CORS policies based on Lab Mode.
+    
+    Vulnerability #9 (Security Misconfiguration): In Lab Mode, CORS is permissive,
+    allowing any origin, methods, and headers. This makes the application vulnerable
+    to cross-origin attacks. In Secure Mode, CORS is restrictive, only allowing
+    trusted frontend origins.
+    """
+    async def dispatch(self, request: StarletteRequest, call_next):
+        # Check if Lab Mode is enabled via header
+        x_lab_mode = request.headers.get("X-Lab-Mode", "").lower()
+        is_lab_mode = LAB_MODE_ENABLED and x_lab_mode in ("true", "1", "yes")
+        
+        # Handle preflight requests
+        if request.method == "OPTIONS":
+            if is_lab_mode:
+                # Lab Mode: Permissive CORS (Vulnerability #9)
+                response = Response()
+                response.headers["Access-Control-Allow-Origin"] = "*"
+                response.headers["Access-Control-Allow-Methods"] = "*"
+                response.headers["Access-Control-Allow-Headers"] = "*"
+                response.headers["Access-Control-Allow-Credentials"] = "true"
+                return response
+            else:
+                # Secure Mode: Restrictive CORS
+                origin = request.headers.get("origin")
+                allowed_origins = [
+                    "http://localhost:5173",
+                    "http://localhost:3000",
+                    "http://localhost:5174",
+                    "http://127.0.0.1:5173",
+                ]
+                if origin in allowed_origins:
+                    response = Response()
+                    response.headers["Access-Control-Allow-Origin"] = origin
+                    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+                    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-User-Id, X-Lab-Mode, X-CSRF-Token"
+                    response.headers["Access-Control-Allow-Credentials"] = "true"
+                    return response
+                else:
+                    return Response(status_code=403)
+        
+        # Process the request
+        response = await call_next(request)
+        
+        # Add CORS headers to response
+        if is_lab_mode:
+            # Lab Mode: Permissive CORS (Vulnerability #9)
+            response.headers["Access-Control-Allow-Origin"] = "*"
+            response.headers["Access-Control-Allow-Methods"] = "*"
+            response.headers["Access-Control-Allow-Headers"] = "*"
+            response.headers["Access-Control-Allow-Credentials"] = "true"
+        else:
+            # Secure Mode: Restrictive CORS
+            origin = request.headers.get("origin")
+            allowed_origins = [
+                "http://localhost:5173",
+                "http://localhost:3000",
+                "http://localhost:5174",
+                "http://127.0.0.1:5173",
+            ]
+            if origin in allowed_origins:
+                response.headers["Access-Control-Allow-Origin"] = origin
+                response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+                response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-User-Id, X-Lab-Mode, X-CSRF-Token"
+                response.headers["Access-Control-Allow-Credentials"] = "true"
+        
+        return response
+
+
+# Add custom CORS middleware
+app.add_middleware(DynamicCORSMiddleware)
 
 
 class PredictionRequest(BaseModel):
@@ -992,13 +1063,23 @@ async def root():
 
 
 @app.get("/models/info")
-async def get_model_info():
-    """Get information about all loaded models"""
+async def get_model_info(
+    x_lab_mode: Optional[str] = Header(None, alias="X-Lab-Mode")
+):
+    """
+    Get information about all loaded models.
+    
+    Vulnerability #9 (Security Misconfiguration): In Lab Mode, this endpoint
+    returns detailed model information including file paths and internal details.
+    In Secure Mode, only basic status information is returned.
+    """
+    is_lab_mode = LAB_MODE_ENABLED and x_lab_mode and x_lab_mode.lower() in ("true", "1", "yes")
+    
     info = {}
 
     for model_id, model in models.items():
         if model is not None:
-            info[model_id] = {
+            base_info = {
                 "status": "loaded",
                 "metadata": model_metadata.get(model_id, {}),
                 "description": {
@@ -1007,36 +1088,208 @@ async def get_model_info():
                     "kmeans": "Unsupervised clustering - Distance-based classification",
                 }.get(model_id, ""),
             }
+            
+            if is_lab_mode:
+                # Lab Mode: Include detailed debug information (Vulnerability #9)
+                base_info["debug_info"] = {
+                    "model_type": type(model).__name__,
+                    "model_path": str(project_root / "models" / model_id) if model_id in ["lstm", "xgboost", "kmeans"] else None,
+                }
+            
+            info[model_id] = base_info
         else:
-            info[model_id] = {"status": "not_loaded", "error": "Model failed to load"}
+            error_info = {"status": "not_loaded"}
+            if is_lab_mode:
+                # Lab Mode: Include error details (Vulnerability #9)
+                error_info["error"] = "Model failed to load"
+                error_info["debug_info"] = {
+                    "expected_path": str(project_root / "models" / model_id),
+                }
+            else:
+                # Secure Mode: Generic error
+                error_info["error"] = "Model unavailable"
+            
+            info[model_id] = error_info
 
     return info
 
 
+@app.get("/debug/info")
+async def debug_info(
+    x_lab_mode: Optional[str] = Header(None, alias="X-Lab-Mode")
+):
+    """
+    Debug endpoint - only accessible in Lab Mode.
+    
+    Vulnerability #9 (Security Misconfiguration): This endpoint exposes internal
+    application details including environment variables, file paths, and system
+    information. In Secure Mode, this endpoint returns 403 Forbidden.
+    """
+    is_lab_mode = LAB_MODE_ENABLED and x_lab_mode and x_lab_mode.lower() in ("true", "1", "yes")
+    
+    if not is_lab_mode:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Debug endpoints are not available in Secure Mode"
+        )
+    
+    # Lab Mode: Expose detailed debug information (Vulnerability #9)
+    return {
+        "application": {
+            "name": "Spam Detection API",
+            "version": "1.0.0",
+            "framework": "FastAPI",
+            "python_version": sys.version,
+        },
+        "environment": {
+            "lab_mode_enabled": LAB_MODE_ENABLED,
+            "project_root": str(project_root),
+            "db_path": str(DB_PATH),
+            "jwt_secret_key_set": bool(SECRET_KEY and SECRET_KEY != "hackthestack-secret-key-change-in-production"),
+        },
+        "models": {
+            "loaded": [k for k, v in models.items() if v is not None],
+            "available": list(models.keys()),
+        },
+        "paths": {
+            "backend": str(project_root / "backend"),
+            "models": str(project_root / "models"),
+            "uploads": str(project_root / "backend" / "uploads"),
+        },
+        "warning": "This endpoint exposes sensitive information and should not be accessible in production"
+    }
+
+
+@app.get("/debug/health")
+async def debug_health(
+    x_lab_mode: Optional[str] = Header(None, alias="X-Lab-Mode")
+):
+    """
+    Detailed health check endpoint - only accessible in Lab Mode.
+    
+    Vulnerability #9 (Security Misconfiguration): This endpoint provides detailed
+    system health information including database status, model loading status,
+    and internal metrics. In Secure Mode, this endpoint returns 403 Forbidden.
+    """
+    is_lab_mode = LAB_MODE_ENABLED and x_lab_mode and x_lab_mode.lower() in ("true", "1", "yes")
+    
+    if not is_lab_mode:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Debug endpoints are not available in Secure Mode"
+        )
+    
+    # Lab Mode: Expose detailed health information (Vulnerability #9)
+    db_exists = DB_PATH.exists()
+    db_size = DB_PATH.stat().st_size if db_exists else 0
+    
+    return {
+        "status": "ok",
+        "timestamp": datetime.utcnow().isoformat(),
+        "database": {
+            "exists": db_exists,
+            "path": str(DB_PATH),
+            "size_bytes": db_size,
+        },
+        "models": {
+            model_id: {
+                "loaded": model is not None,
+                "type": type(model).__name__ if model else None,
+            }
+            for model_id, model in models.items()
+        },
+        "system": {
+            "lab_mode_enabled": LAB_MODE_ENABLED,
+            "csrf_tokens_count": len(csrf_tokens),
+            "failed_login_attempts_count": len(failed_login_attempts),
+        }
+    }
+
+
 # Add global exception handlers
 @app.exception_handler(RequestValidationError)
-async def validation_exception_handler(request, exc):
+async def validation_exception_handler(request: Request, exc):
+    """
+    Handle validation errors with different verbosity based on Lab Mode.
+    
+    Vulnerability #9 (Security Misconfiguration): In Lab Mode, error responses
+    include detailed validation errors, stack traces, and request body details.
+    This leaks internal application structure and can aid attackers.
+    """
+    # Check Lab Mode from header
+    x_lab_mode = request.headers.get("X-Lab-Mode", "").lower()
+    is_lab_mode = LAB_MODE_ENABLED and x_lab_mode in ("true", "1", "yes")
+    
     logger.error(f"Validation error: {exc}")
-    return JSONResponse(
-        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-        content={
-            "error": "Validation Error",
-            "detail": str(exc.errors()),
-            "body": str(exc.body),
-        },
-    )
+    
+    if is_lab_mode:
+        # Lab Mode: Verbose error messages (Vulnerability #9)
+        return JSONResponse(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            content={
+                "error": "Validation Error",
+                "detail": str(exc.errors()),
+                "body": str(exc.body),
+                "path": str(request.url.path),
+                "method": request.method,
+                "debug_info": {
+                    "exception_type": type(exc).__name__,
+                    "full_errors": exc.errors(),
+                }
+            },
+        )
+    else:
+        # Secure Mode: Generic error messages
+        return JSONResponse(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            content={
+                "error": "Validation Error",
+                "detail": "Invalid request format",
+            },
+        )
 
 
 @app.exception_handler(Exception)
-async def general_exception_handler(request, exc):
+async def general_exception_handler(request: Request, exc):
+    """
+    Handle general exceptions with different verbosity based on Lab Mode.
+    
+    Vulnerability #9 (Security Misconfiguration): In Lab Mode, error responses
+    include stack traces, file paths, and internal exception details. This leaks
+    sensitive information about the application structure and can aid attackers.
+    """
+    # Check Lab Mode from header
+    x_lab_mode = request.headers.get("X-Lab-Mode", "").lower()
+    is_lab_mode = LAB_MODE_ENABLED and x_lab_mode in ("true", "1", "yes")
+    
     logger.error(f"Unhandled exception: {str(exc)}", exc_info=True)
-    return JSONResponse(
-        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        content={
-            "error": "Internal server error",
-            "detail": "An unexpected error occurred",
-        },
-    )
+    
+    if is_lab_mode:
+        # Lab Mode: Verbose error with stack trace (Vulnerability #9)
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={
+                "error": "Internal server error",
+                "detail": str(exc),
+                "exception_type": type(exc).__name__,
+                "traceback": traceback.format_exc(),
+                "path": str(request.url.path),
+                "method": request.method,
+                "debug_info": {
+                    "file": __file__,
+                    "line": exc.__traceback__.tb_lineno if exc.__traceback__ else None,
+                }
+            },
+        )
+    else:
+        # Secure Mode: Generic error message
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={
+                "error": "Internal server error",
+                "detail": "An unexpected error occurred",
+            },
+        )
 
 
 # Enhance predict endpoint with validation

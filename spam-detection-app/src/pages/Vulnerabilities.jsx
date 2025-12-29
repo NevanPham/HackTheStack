@@ -328,6 +328,54 @@ function Vulnerabilities({ labMode }) {
           </div>
         </div>
       </section>
+
+      <section className="vuln-section">
+        <div className="vuln-card">
+          <p className="vuln-label">Vulnerability #9: Security Misconfiguration</p>
+          <div className="vuln-grid">
+            <div className="vuln-tile">
+              <h3>❌ What went wrong</h3>
+              <p>
+                In Lab Mode, the application configuration is intentionally weakened to expose internal details and use permissive security settings. The critical flaws: (1) Error handling is verbose - error responses include stack traces, file paths, line numbers, exception types, and full request details. This leaks sensitive information about the application structure, framework version, and internal implementation. (2) CORS (Cross-Origin Resource Sharing) is permissive - the application allows requests from any origin (*), any HTTP method, and any header. This makes the application vulnerable to cross-origin attacks where malicious websites can make requests to the API on behalf of users. (3) Debug endpoints are exposed - internal endpoints like /debug/info and /debug/health are accessible, revealing system information, file paths, database locations, and environment configuration. (4) Detailed model information is exposed - the /models/info endpoint returns file paths, model types, and internal structure details. In Secure Mode, the application uses hardened configuration: generic error messages without stack traces, restrictive CORS that only allows trusted frontend origins, debug endpoints are blocked (403 Forbidden), and minimal information exposure. This prevents information leakage and cross-origin attacks.
+              </p>
+            </div>
+            <div className="vuln-tile">
+              <h3>🔍 How it's exploited</h3>
+              <p>
+                An attacker can exploit the misconfiguration in multiple ways: (1) Information disclosure through verbose errors - by triggering errors (invalid requests, malformed data, or edge cases), the attacker receives detailed error responses containing stack traces, file paths, Python version, framework details, and internal structure. This information helps the attacker understand the application architecture and identify potential attack vectors. (2) Cross-origin attacks through permissive CORS - a malicious website can make requests to the API from the user's browser, potentially accessing user data or performing actions on behalf of the user. The permissive CORS policy allows any website to interact with the API, bypassing the Same-Origin Policy protection. (3) System reconnaissance through debug endpoints - the attacker can access /debug/info and /debug/health endpoints to gather information about the system, including file paths, database locations, model status, and environment configuration. This information can be used to plan further attacks or identify sensitive files. (4) Framework fingerprinting - detailed error messages and exposed endpoints reveal the framework (FastAPI), Python version, and application structure, allowing attackers to search for known vulnerabilities specific to those versions. The vulnerability exists at the configuration layer: the moment the application exposes internal details or uses permissive security settings, the trust boundary is broken.
+              </p>
+            </div>
+            <div className="vuln-tile">
+              <h3>⚠️ Realistic attack scenario</h3>
+              <p>
+                Step-by-step: (1) An attacker discovers the Spam Detector API and wants to gather information about its structure. (2) In Lab Mode, the attacker sends a malformed request (e.g., invalid JSON, missing required fields, or type mismatches) to trigger a validation error. (3) The application returns a verbose error response containing the full validation details, request body, exception type, and stack trace. (4) From the error response, the attacker learns the framework (FastAPI), Python version, file paths, and internal structure. (5) The attacker then accesses the /debug/info endpoint (accessible in Lab Mode) to gather more system information, including project root paths, database locations, and model file paths. (6) Using the permissive CORS policy, the attacker creates a malicious website that makes cross-origin requests to the API, potentially accessing user data or performing actions on behalf of users who visit the malicious site. (7) The attacker uses the gathered information to identify potential attack vectors, such as file path traversal opportunities, database access, or framework-specific vulnerabilities. (8) In a real application, this could lead to complete system compromise, data exfiltration, or further exploitation of discovered vulnerabilities. The attack is particularly dangerous because it doesn't require special tools or techniques - just observation of error messages and API responses. The misconfiguration makes reconnaissance trivial and provides a foundation for more sophisticated attacks.
+              </p>
+            </div>
+            <div className="vuln-tile">
+              <h3>✅ How it should be fixed</h3>
+              <p>
+                Always use hardened configuration settings that minimize information exposure. In Secure Mode, the application implements secure configuration: (1) Generic error messages - return user-friendly error messages without exposing internal details. Never include stack traces, file paths, line numbers, or exception types in error responses sent to clients. Log detailed errors server-side for debugging, but don't expose them to clients. (2) Restrictive CORS policy - only allow requests from trusted, known frontend origins. Use an allowlist of specific origins rather than allowing any origin (*). Limit allowed HTTP methods to only those needed by the application. Restrict allowed headers to only those required. Never use permissive CORS in production. (3) Disable or protect debug endpoints - remove debug endpoints from production deployments, or protect them with strong authentication and IP restrictions. Debug endpoints should never be accessible to external users. (4) Minimize information exposure - only return the minimum information necessary for the application to function. Don't expose file paths, internal structure, framework versions, or system details in API responses. (5) Use environment-specific configuration - have separate configurations for development, staging, and production. Production should always use the most restrictive settings. (6) Implement proper logging - log detailed errors and debug information server-side for troubleshooting, but never expose this information to clients. (7) Regular security audits - review application configuration regularly to ensure no sensitive information is exposed. The key principle: production applications should reveal as little as possible about their internal structure. Security through obscurity isn't sufficient, but unnecessary information disclosure makes attacks easier.
+              </p>
+            </div>
+          </div>
+
+          <div className="try-it-card">
+            <h3>Try it</h3>
+            <p>
+              <strong>Test 1 - Verbose Error Messages:</strong> Go to the <Link to="/spam-detector">Spam Detector</Link> and log in. In Secure Mode (Lab Mode OFF), open browser DevTools (F12) and go to the Console tab. Try submitting an empty message or a message with invalid characters. Notice the error response is generic: "Validation Error" or "Invalid request format". Then toggle to Lab Mode (Lab Mode ON) and repeat the same action. In the Network tab, click on the failed request and view the Response. Notice that Lab Mode returns detailed error messages including validation details, request body, exception types, and file paths.
+            </p>
+            <p>
+              <strong>Test 2 - Debug Endpoints:</strong> In Secure Mode, open a new browser tab and navigate to http://localhost:8000/debug/info. Notice you receive a 403 Forbidden error. Then toggle to Lab Mode and refresh the page. Notice that the endpoint now returns detailed system information including Python version, file paths, database locations, and environment configuration. Try the same with http://localhost:8000/debug/health to see detailed health information.
+            </p>
+            <p>
+              <strong>Test 3 - CORS Headers:</strong> In Secure Mode, open DevTools (F12), go to the Network tab, and make a request to the API (e.g., submit a message for analysis). Click on the request and view the Response Headers. Notice "Access-Control-Allow-Origin" shows a specific origin like "http://localhost:5173", not "*". Then toggle to Lab Mode and make the same request. Notice "Access-Control-Allow-Origin" is now "*", allowing any origin to make requests.
+            </p>
+            <p>
+              <strong>Test 4 - Model Info Details:</strong> In Secure Mode, navigate to http://localhost:8000/models/info (or use the API). Notice the response contains basic model status and metadata. Then toggle to Lab Mode and access the same endpoint. Notice the response now includes "debug_info" with model types, file paths, and internal structure details that are hidden in Secure Mode.
+            </p>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
