@@ -105,6 +105,49 @@ body {
   max-width: 100vw;
 }
 
+/* Global link styles */
+a {
+  color: var(--accent-color);
+  text-decoration: underline;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+a:hover {
+  text-decoration: underline;
+  opacity: 0.9;
+}
+
+/* Secure Mode - Cyan links with glow */
+:root:not([data-mode="lab"]) a {
+  color: #22d3ee;
+  text-shadow: 0 0 8px rgba(34, 211, 238, 0.5);
+  text-decoration-color: rgba(34, 211, 238, 0.6);
+}
+
+:root:not([data-mode="lab"]) a:hover {
+  color: #06b6d4;
+  text-shadow: 
+    0 0 12px rgba(34, 211, 238, 0.8),
+    0 0 20px rgba(34, 211, 238, 0.4);
+  text-decoration-color: #22d3ee;
+}
+
+/* Lab Mode - Red links with glow */
+:root[data-mode="lab"] a {
+  color: #ef4444;
+  text-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
+  text-decoration-color: rgba(239, 68, 68, 0.6);
+}
+
+:root[data-mode="lab"] a:hover {
+  color: #dc2626;
+  text-shadow: 
+    0 0 12px rgba(239, 68, 68, 0.8),
+    0 0 20px rgba(239, 68, 68, 0.4);
+  text-decoration-color: #ef4444;
+}
+
 /* Apply flex to root instead of body */
 #root {
   display: flex;
