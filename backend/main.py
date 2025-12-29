@@ -55,7 +55,6 @@ DB_PATH = project_root / "backend" / "db" / "analyses.db"
 # Import settings module for Lab Mode gating
 from backend.settings import get_settings, resolve_mode
 from backend.policies.authorization import require_analysis_access, get_user_id_from_header
-from backend.policies.authorization import require_analysis_access, get_user_id_from_header
 
 # JWT Configuration
 SECRET_KEY = os.getenv("JWT_SECRET_KEY", "hackthestack-secret-key-change-in-production")
@@ -762,10 +761,12 @@ def require_csrf_token(
     """
     # Resolve mode using centralized resolver
     mode = resolve_mode(request)
+    logger.info(f"CSRF Debug: Mode resolved to '{mode}' for CSRF validation")
     
     if mode == "lab":
         # Lab Mode: CSRF protection is bypassed (Vulnerability #4)
         # State-changing requests succeed without CSRF token validation
+        logger.info("CSRF Debug: Lab Mode detected - bypassing CSRF validation")
         return
     
     # Secure Mode: Require CSRF token for state-changing methods
