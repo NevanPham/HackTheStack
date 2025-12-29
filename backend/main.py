@@ -22,8 +22,8 @@ import httpx
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from fastapi import FastAPI, HTTPException, status, Header, Request
-from fastapi.middleware.base import BaseHTTPMiddleware
+from fastapi import FastAPI, HTTPException, status, Header, Request, Depends, File, UploadFile, Form
+from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request as StarletteRequest
 from starlette.responses import Response
 from contextlib import asynccontextmanager
@@ -54,6 +54,8 @@ DB_PATH = project_root / "backend" / "db" / "analyses.db"
 
 # Import settings module for Lab Mode gating
 from backend.settings import get_settings, resolve_mode
+from backend.policies.authorization import require_analysis_access, get_user_id_from_header
+from backend.policies.authorization import require_analysis_access, get_user_id_from_header
 
 # JWT Configuration
 SECRET_KEY = os.getenv("JWT_SECRET_KEY", "hackthestack-secret-key-change-in-production")
@@ -1414,9 +1416,9 @@ async def predict(
 
 @app.post("/upload/txt-analyze", response_model=PredictionResponse)
 async def analyze_txt_file(
+    http_request: Request,
     file: UploadFile = File(...),
     models: str = Form("[\"xgboost\"]"),  # JSON string from form data
-    http_request: Request
 ):
     """
     Analyze a .txt file for spam detection.
@@ -1732,17 +1734,16 @@ async def predict_batch(request: BatchPredictionRequest):
 async def save_analysis(
     request: SaveAnalysisRequest,
     http_request: Request,
-    x_user_id: Optional[str] = Header(None, alias="X-User-Id"),
+    x_user_id: str = Depends(get_user_id_from_header),
     x_csrf_token: Optional[str] = Header(None, alias="X-CSRF-Token"),
     authorization: Optional[str] = Header(None)
 ):
-    """Persist a completed analysis to SQLite."""
-    # Require user_id header
-    if not x_user_id:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="X-User-Id header is required",
-        )
+    """
+    Persist a completed analysis to SQLite.
+    
+    CSRF protection is enforced in Secure Mode via require_csrf_token.
+    User ID validation is handled by get_user_id_from_header dependency.
+    """
     
     # Get username from JWT token for CSRF validation
     username = None
@@ -1830,15 +1831,15 @@ async def save_analysis(
 @app.get("/analysis/list", response_model=List[SavedAnalysisSummary])
 async def list_analyses(
     request: Request,
-    x_user_id: Optional[str] = Header(None, alias="X-User-Id")
+    x_user_id: str = Depends(get_user_id_from_header)
 ):
-    """Return a list of saved analyses with minimal fields for history view."""
-    # Require user_id header
-    if not x_user_id:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="X-User-Id header is required",
-        )
+    """
+    Return a list of saved analyses with minimal fields for history view.
+    
+    Access control is enforced by mode-aware filtering:
+    - Secure Mode: Only returns analyses owned by the requesting user
+    - Lab Mode: Returns all analyses (intentional IDOR vulnerability)
+    """
     
     # Resolve mode using centralized resolver
     mode = resolve_mode(request)
@@ -1893,61 +1894,18 @@ async def list_analyses(
 async def get_analysis(
     analysis_id: int,
     request: Request,
-    x_user_id: Optional[str] = Header(None, alias="X-User-Id")
+    analysis_data: Dict[str, Any] = Depends(require_analysis_access)
 ):
-    """Return full details for a single saved analysis."""
-    # Require user_id header
-    if not x_user_id:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="X-User-Id header is required",
-        )
+    """
+    Return full details for a single saved analysis.
     
-    # Resolve mode using centralized resolver
-    mode = resolve_mode(request)
-    
-    conn = _get_db_connection()
-    try:
-        cursor = conn.cursor()
-        cursor.execute(
-            """
-            SELECT id, message_text, selected_models, prediction_summary, created_at, user_id
-            FROM saved_analyses
-            WHERE id = ?
-            """,
-            (analysis_id,),
-        )
-        row = cursor.fetchone()
-    finally:
-        conn.close()
-
-    if row is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Analysis with id {analysis_id} not found",
-        )
-    
-    # IDOR Vulnerability: In Lab Mode, bypass ownership check
-    # Secure Mode: Enforce ownership - return 403 if analysis belongs to another user
-    if mode != "lab" and row["user_id"] != x_user_id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail=f"Access denied to analysis {analysis_id}",
-        )
-
-    # Include user_id in Lab Mode to make IDOR vulnerability visible
-    user_id = row["user_id"] if mode == "lab" else None
-    
-    return SavedAnalysisDetail(
-        id=row["id"],
-        message_text=row["message_text"],
-        selected_models=json.loads(row["selected_models"]),
-        prediction_summary=json.loads(row["prediction_summary"])
-        if row["prediction_summary"] is not None
-        else None,
-        created_at=str(row["created_at"]),
-        user_id=user_id,
-    )
+    Access control is enforced by the require_analysis_access dependency:
+    - Secure Mode: Only allows access to analyses owned by the requesting user
+    - Lab Mode: Allows access to any analysis (intentional IDOR vulnerability)
+    """
+    # Convert analysis_data dict to SavedAnalysisDetail
+    # The dependency already handled all authorization and data fetching
+    return SavedAnalysisDetail(**analysis_data)
 
 
 async def predict_xgboost(text: str) -> Dict[str, Any]:
