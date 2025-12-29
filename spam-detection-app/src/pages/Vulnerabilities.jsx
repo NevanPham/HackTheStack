@@ -250,6 +250,45 @@ function Vulnerabilities({ labMode }) {
           </div>
         </div>
       </section>
+
+      <section className="vuln-section">
+        <div className="vuln-card">
+          <p className="vuln-label">Vulnerability #7: Server-Side Request Forgery (SSRF)</p>
+          <div className="vuln-grid">
+            <div className="vuln-tile">
+              <h3>❌ What went wrong</h3>
+              <p>
+                In Lab Mode, the Spam Detector accepts URLs as input and fetches them without strict validation of the destination. When a user submits a message that is detected as a URL (starting with http:// or https://), the backend makes an HTTP request to fetch the URL content. The critical flaw: in Lab Mode, the application only performs basic scheme validation (ensuring http/https) but doesn't validate the destination hostname or IP address. This allows users to request URLs pointing to internal, private, or localhost addresses that should never be accessible from the server. The application trusts user-provided URLs without verifying they point to safe, external destinations. This breaks the fundamental security principle: never trust user input, especially when it controls network requests. In Secure Mode, the application performs strict validation: it only allows http/https schemes, blocks common internal hostnames (localhost, 127.0.0.1), resolves DNS to check resolved IP addresses, and blocks private, loopback, link-local, reserved, and multicast IP ranges. This prevents the server from making requests to internal services that should not be exposed.
+              </p>
+            </div>
+            <div className="vuln-tile">
+              <h3>🔍 How it's exploited</h3>
+              <p>
+                An attacker can submit URLs pointing to internal services that are not intended to be accessible from the server. When the application fetches these URLs, it makes requests from the server's network context, not the attacker's browser. This means the server can access internal services that are protected by firewalls or network segmentation. The attack works because the application trusts user-provided URLs and makes requests without validating the destination. In Lab Mode, an attacker can submit URLs like http://localhost:8000/, http://127.0.0.1:3306/, http://192.168.1.1/, or http://169.254.169.254/ (cloud metadata services). The server will attempt to fetch these URLs, potentially exposing internal services, database ports, admin panels, or cloud metadata. More sophisticated attacks can use DNS rebinding, protocol smuggling, or URL encoding to bypass basic validation. The vulnerability exists at the URL validation layer: the moment user input controls where the server makes network requests, the trust boundary is broken. The server's network position gives it access to resources that should never be reachable from external users.
+              </p>
+            </div>
+            <div className="vuln-tile">
+              <h3>⚠️ Realistic attack scenario</h3>
+              <p>
+                Step-by-step: (1) An attacker discovers that the Spam Detector accepts URLs and fetches them for analysis. (2) The attacker knows that the server is likely running on localhost and may have other services accessible on the internal network. (3) In Lab Mode, the attacker submits http://localhost:8000/ as the message text. (4) The backend detects this is a URL and attempts to fetch it without strict validation. (5) The server successfully connects to its own API endpoint (localhost:8000), proving the SSRF vulnerability. (6) The attacker then tries http://127.0.0.1:3306/ to probe for a MySQL database, or http://169.254.169.254/latest/meta-data/ to access cloud metadata (AWS, Azure, GCP). (7) If successful, the attacker can read internal service responses, enumerate open ports, access cloud metadata (which may contain credentials or instance information), or interact with internal APIs that should never be exposed. In a real application, this could lead to complete infrastructure compromise, credential theft from cloud metadata services, database access, or lateral movement within the internal network. The attack is particularly dangerous because it uses the server's privileged network position to access resources that are protected from external access. The attacker never needs to directly access these services—they trick the server into accessing them on their behalf.
+              </p>
+            </div>
+            <div className="vuln-tile">
+              <h3>✅ How it should be fixed</h3>
+              <p>
+                Always validate URL destinations before making server-side requests. In Secure Mode, the application implements strict validation: (1) Only allow http and https schemes (block file://, gopher://, etc.). (2) Block common internal hostnames (localhost, 127.0.0.1, 0.0.0.0, ::1, localhost.localdomain). (3) Resolve DNS and check all resolved IP addresses against private IP ranges (10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 127.0.0.0/8, 169.254.0.0/16, etc.). (4) Block loopback, link-local, reserved, and multicast IP addresses. (5) Use an allowlist of permitted domains if possible, rather than trying to block all dangerous destinations. The key principle: never trust user-provided URLs. Always validate the destination using server-side checks that resolve DNS and verify IP addresses. The validation must happen server-side because the client cannot be trusted. Additionally, implement request timeouts, size limits, and consider using a proxy or allowlist for external requests. If URL fetching is necessary, consider using a separate service with restricted network access or a dedicated proxy that enforces security policies. Remember: the server's network position gives it access to internal resources. User-controlled URLs must be validated to prevent the server from accessing resources it shouldn't.
+              </p>
+            </div>
+          </div>
+
+          <div className="try-it-card">
+            <h3>Try it</h3>
+            <p>
+              Go to the <Link to="/spam-detector">Spam Detector</Link> and log in. In Secure Mode (Lab Mode OFF), try submitting a URL like http://localhost:8000/ or http://127.0.0.1:8000/. Notice that you receive an error message indicating the URL validation failed because internal hostnames are not allowed. Then toggle to Lab Mode (Lab Mode ON) and submit the same URL. Notice that the request succeeds and the server fetches the URL, demonstrating the SSRF vulnerability. You can also try public URLs like https://www.example.com in both modes—they should work in both, showing that Secure Mode only blocks dangerous internal destinations.
+            </p>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
