@@ -61,3 +61,6 @@ coverage.xml
 # mypy cache
 .mypy_cache/
 .cursor/
+
+# Uploaded files (Lab Mode vulnerability demonstration)
+backend/uploads/

@@ -1158,16 +1158,30 @@ async def analyze_txt_file(
     """
     Analyze a .txt file for spam detection.
     
-    Strict validation:
+    Vulnerability #8 (Insecure File Upload): In Lab Mode, file validation is relaxed,
+    allowing files with incorrect MIME types, larger file sizes, and storing files
+    using the original filename. This makes the application vulnerable to file upload
+    attacks, path traversal, and storage of malicious content.
+    
+    Secure Mode (strict validation):
     - Only .txt extension allowed
     - MIME type must be text/plain
     - Maximum file size: 100KB
     - Content read as UTF-8 text
     - File processed in memory and discarded (not stored)
     
+    Lab Mode (vulnerable):
+    - Only checks filename extension (.txt)
+    - Skips MIME type validation
+    - Significantly increased size limit (10MB)
+    - Stores files using original filename in uploads/ folder
+    
     Returns the same prediction response as /predict endpoint.
     """
-    # Validate file extension
+    # Determine Lab Mode using server-side gating (env var + header)
+    is_lab_mode = LAB_MODE_ENABLED and x_lab_mode and x_lab_mode.lower() in ("true", "1", "yes")
+    
+    # Validate file extension (required in both modes)
     if not file.filename:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -1181,15 +1195,27 @@ async def analyze_txt_file(
             detail=f"Only .txt files are allowed. Received: {file.filename}"
         )
     
-    # Validate MIME type
-    if file.content_type and file.content_type not in ('text/plain', 'text/plain; charset=utf-8'):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Invalid file type. Expected text/plain, got: {file.content_type}"
-        )
+    # Validate MIME type based on mode
+    if is_lab_mode:
+        # Lab Mode: Skip MIME type validation (Vulnerability #8)
+        # Trust only the filename extension, which can be easily spoofed
+        logger.warning(f"⚠️ Lab Mode: Skipping MIME type validation for file: {file.filename}")
+    else:
+        # Secure Mode: Strict MIME type validation
+        if file.content_type and file.content_type not in ('text/plain', 'text/plain; charset=utf-8'):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid file type. Expected text/plain, got: {file.content_type}"
+            )
     
-    # Maximum file size: 100KB (100 * 1024 bytes)
-    MAX_FILE_SIZE = 100 * 1024  # 100KB
+    # File size limits based on mode
+    if is_lab_mode:
+        # Lab Mode: Significantly increased size limit (Vulnerability #8)
+        MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
+        logger.warning(f"⚠️ Lab Mode: Using relaxed file size limit (10MB) for file: {file.filename}")
+    else:
+        # Secure Mode: Strict size limit
+        MAX_FILE_SIZE = 100 * 1024  # 100KB
     
     # Read file content
     try:
@@ -1199,7 +1225,7 @@ async def analyze_txt_file(
         if len(content) > MAX_FILE_SIZE:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"File size exceeds maximum limit of {MAX_FILE_SIZE // 1024}KB. File size: {len(content)} bytes"
+                detail=f"File size exceeds maximum limit of {MAX_FILE_SIZE // (1024 * 1024) if MAX_FILE_SIZE >= 1024 * 1024 else MAX_FILE_SIZE // 1024}{'MB' if MAX_FILE_SIZE >= 1024 * 1024 else 'KB'}. File size: {len(content)} bytes"
             )
         
         # Decode as UTF-8 text
@@ -1234,6 +1260,26 @@ async def analyze_txt_file(
             detail=f"Error processing file: {str(e)}"
         )
     
+    # Store file in Lab Mode using original filename (Vulnerability #8)
+    if is_lab_mode:
+        try:
+            # Create uploads directory if it doesn't exist
+            uploads_dir = project_root / "backend" / "uploads"
+            uploads_dir.mkdir(parents=True, exist_ok=True)
+            
+            # Use original filename (vulnerable to path traversal and filename trust issues)
+            # In a real attack, an attacker could use filenames like "../../../etc/passwd" or "malicious.exe.txt"
+            file_path = uploads_dir / file.filename
+            
+            # Write file content
+            with open(file_path, 'wb') as f:
+                f.write(content)
+            
+            logger.warning(f"⚠️ Lab Mode: Stored uploaded file using original filename: {file.filename} at {file_path}")
+        except Exception as e:
+            logger.error(f"Error storing file in Lab Mode: {str(e)}")
+            # Don't fail the request if storage fails, just log it
+    
     # Parse models from JSON string
     try:
         model_list = json.loads(models)
@@ -1241,9 +1287,6 @@ async def analyze_txt_file(
             model_list = ["xgboost"]
     except (json.JSONDecodeError, TypeError):
         model_list = ["xgboost"]
-    
-    # Determine Lab Mode using server-side gating (env var + header)
-    is_lab_mode = LAB_MODE_ENABLED and x_lab_mode and x_lab_mode.lower() in ("true", "1", "yes")
     
     # Check if content is a URL and handle URL fetching (same logic as /predict)
     url_metadata = None
@@ -1310,8 +1353,9 @@ async def analyze_txt_file(
         text_to_analyze, model_ids
     )
     
-    # File is automatically discarded after this function returns
+    # In Secure Mode: File is automatically discarded after this function returns
     # (processed in memory, never stored)
+    # In Lab Mode: File is stored in uploads/ directory using original filename
     
     return PredictionResponse(
         predictions=predictions,
