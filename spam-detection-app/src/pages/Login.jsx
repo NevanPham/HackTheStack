@@ -66,7 +66,6 @@ function Login({ onLogin }) {
     <div className="login-container">
       <div className="login-box">
         <h1>HackTheStack</h1>
-        <h2>Login to Access Lab Mode</h2>
         <p className="login-subtitle">
           Lab Mode contains intentionally vulnerable features for educational purposes.
           Please log in with your credentials to access it.
@@ -161,7 +160,7 @@ function Login({ onLogin }) {
             <li>Username: <code>nevan</code> | Password: <code>nevan</code></li>
             <li>Username: <code>naven</code> | Password: <code>naven</code></li>
           </ul>
-          <p style={{ marginTop: '1rem', fontSize: '0.85rem', color: '#888' }}>
+          <p style={{ marginTop: '1rem', fontSize: '0.85rem', color: '#333' }}>
             <strong>SQL Injection Test:</strong> In Lab Mode, try:
             <br />
             • Username: <code>nevan' OR '1'='1' --</code> with password <code>nevan</code> (username injection)

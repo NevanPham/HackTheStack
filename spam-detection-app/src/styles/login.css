@@ -28,22 +28,18 @@
   transition: all 0.2s ease;
 }
 
-/* Secure Mode - Dark panel with cyan border */
+/* Secure Mode - White panel */
 :root:not([data-mode="lab"]) .login-box {
-  background: #111827;
-  border: 1px solid #1e293b;
-  box-shadow: 
-    0 10px 40px rgba(0, 0, 0, 0.6),
-    0 0 20px rgba(34, 211, 238, 0.1);
+  background: white;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
 }
 
-/* Lab Mode - Dark red panel with red border */
+/* Lab Mode - White panel */
 :root[data-mode="lab"] .login-box {
-  background: #1f1414;
-  border: 1px solid #3a1f1f;
-  box-shadow: 
-    0 10px 40px rgba(0, 0, 0, 0.6),
-    0 0 20px rgba(239, 68, 68, 0.1);
+  background: white;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
 }
 
 .login-box h1 {
@@ -51,35 +47,35 @@
   font-size: 2.5rem;
   margin: 0 0 0.5rem 0;
   text-align: center;
-  color: #333;
+  color: #1a1a1a;
   transition: all 0.2s ease;
 }
 
-/* Secure Mode - Cyan title with monospace */
+/* Secure Mode - Cyan neon title with monospace */
 :root:not([data-mode="lab"]) .login-box h1 {
   font-family: "Courier New", monospace;
   color: #22d3ee;
-  text-shadow: 0 0 10px rgba(34, 211, 238, 0.6);
+  text-shadow: 0 0 10px rgba(34, 211, 238, 0.6), 0 0 20px rgba(34, 211, 238, 0.4);
 }
 
-/* Lab Mode - Red title with monospace */
+/* Lab Mode - Red neon title with monospace */
 :root[data-mode="lab"] .login-box h1 {
   font-family: "Courier New", monospace;
   color: #ef4444;
-  text-shadow: 0 0 10px rgba(239, 68, 68, 0.6);
+  text-shadow: 0 0 10px rgba(239, 68, 68, 0.6), 0 0 20px rgba(239, 68, 68, 0.4);
 }
 
 .login-box h2 {
   font-size: 1.5rem;
   margin: 0 0 1rem 0;
   text-align: center;
-  color: #666;
+  color: #333;
   font-weight: 400;
 }
 
 .login-subtitle {
   text-align: center;
-  color: #777;
+  color: #444;
   margin-bottom: 2rem;
   font-size: 0.95rem;
   line-height: 1.5;
@@ -206,7 +202,7 @@
 
 .login-info p {
   margin: 0 0 0.75rem 0;
-  color: #666;
+  color: #333;
   font-size: 0.9rem;
 }
 
@@ -219,7 +215,7 @@
 
 .login-info li {
   margin-bottom: 0.5rem;
-  color: #555;
+  color: #333;
   font-size: 0.9rem;
 }
 
@@ -229,7 +225,8 @@
   border-radius: 3px;
   font-family: 'Courier New', monospace;
   font-size: 0.85rem;
-  color: #667eea;
+  color: #1a1a1a;
+  border: 1px solid #ddd;
 }
 
 .login-mode-toggle {
@@ -261,7 +258,7 @@
 }
 
 .toggle-text {
-  color: #333;
+  color: #1a1a1a;
   font-size: 0.95rem;
   font-weight: 500;
 }
