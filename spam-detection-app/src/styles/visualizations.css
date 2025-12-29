@@ -339,14 +339,17 @@
   transition: color 0.2s ease;
 }
 
-/* Secure Mode - Brighter muted gray description */
-:root:not([data-mode="lab"]) .chart-description {
-  color: #d1d5db;
+/* Both modes - Black text for chart descriptions */
+.chart-description {
+  color: #000000 !important;
 }
 
-/* Lab Mode - Brighter muted gray description */
+:root:not([data-mode="lab"]) .chart-description {
+  color: #000000 !important;
+}
+
 :root[data-mode="lab"] .chart-description {
-  color: #d1d5db;
+  color: #000000 !important;
 }
 
 /* Filter Buttons */

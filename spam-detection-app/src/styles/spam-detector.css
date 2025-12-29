@@ -404,6 +404,22 @@
   font-family: "Milker", "Impact", "Arial Black", sans-serif;
 }
 
+.section-subtitle {
+  color: #000000 !important;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+/* Both modes - Black text for section subtitle */
+:root:not([data-mode="lab"]) .section-subtitle {
+  color: #000000 !important;
+}
+
+:root[data-mode="lab"] .section-subtitle {
+  color: #000000 !important;
+}
+
 .analysis-stats {
   display: flex;
   flex-direction: column;
